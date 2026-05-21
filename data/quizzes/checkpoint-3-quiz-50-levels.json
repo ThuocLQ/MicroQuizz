@@ -1,0 +1,722 @@
+{
+  "title": "Checkpoint 3 - Clean Architecture + Validation + Identity/JWT + Role/Claim",
+  "description": "50 câu trắc nghiệm nhiều level cho Phase 1.3 của MicroShop. Đáp án nhiễu khó hơn, tập trung hiểu sâu boundary, dependency, validation, JWT và authorization.",
+  "version": "2.0",
+  "questionCount": 50,
+  "levels": [
+    {
+      "id": "L1 - Foundation",
+      "description": "Nhớ khái niệm, boundary, endpoint và status code cốt lõi."
+    },
+    {
+      "id": "L2 - Applied",
+      "description": "Áp dụng vào flow, debug lỗi, đọc thiết kế hiện tại."
+    },
+    {
+      "id": "L3 - Advanced",
+      "description": "Trade-off, production risk, phỏng vấn và system design mindset."
+    }
+  ],
+  "questions": [
+    {
+      "id": "cp3-l1-001",
+      "level": "L1 - Foundation",
+      "tag": "Clean Architecture",
+      "question": "Mục tiêu chính của Buổi 11 trong MicroShop là gì?",
+      "options": [
+        "Tách ngay CatalogService thành 4 project riêng để enforce dependency",
+        "Tạo Clean Architecture baseline đủ sạch cho CatalogService trước khi thêm service lớn hơn",
+        "Thay Dapper bằng EF Core để dễ migration",
+        "Thêm RabbitMQ để xử lý event đầu tiên"
+      ],
+      "answerIndex": 1,
+      "explanation": "Buổi 11 chỉ tạo folder-based Clean Architecture baseline cho CatalogService, chưa tách project-based và chưa thêm messaging."
+    },
+    {
+      "id": "cp3-l1-002",
+      "level": "L1 - Foundation",
+      "tag": "Dependency Rule",
+      "question": "Dependency Rule trong Clean Architecture nói ngắn gọn là gì?",
+      "options": [
+        "Runtime flow luôn phải đi từ database lên API",
+        "Code dependency nên đi từ outer layer vào inner layer, inner layer không phụ thuộc technical details",
+        "Mọi layer đều được using lẫn nhau miễn là build pass",
+        "Infrastructure không được phụ thuộc Application"
+      ],
+      "answerIndex": 1,
+      "explanation": "Dependency Rule nói về code dependency, không phải runtime flow. Domain/Application cần được bảo vệ khỏi DB, framework, HTTP."
+    },
+    {
+      "id": "cp3-l1-003",
+      "level": "L1 - Foundation",
+      "tag": "Layering",
+      "question": "Layer nào nên chứa Product domain model trong Buổi 11?",
+      "options": [
+        "API",
+        "Application",
+        "Domain",
+        "Infrastructure"
+      ],
+      "answerIndex": 2,
+      "explanation": "Product là domain model chứa state/rule cơ bản nên nằm trong Domain."
+    },
+    {
+      "id": "cp3-l1-004",
+      "level": "L1 - Foundation",
+      "tag": "Layering",
+      "question": "Layer nào nên chứa DapperProductRepository?",
+      "options": [
+        "API",
+        "Application",
+        "Domain",
+        "Infrastructure"
+      ],
+      "answerIndex": 3,
+      "explanation": "Dapper là chi tiết persistence, nên implementation repository nằm trong Infrastructure."
+    },
+    {
+      "id": "cp3-l1-005",
+      "level": "L1 - Foundation",
+      "tag": "Repository",
+      "question": "Handler trong Application nên phụ thuộc vào gì?",
+      "options": [
+        "DapperProductRepository",
+        "SqliteConnection",
+        "IProductRepository",
+        "ProductEndpoints"
+      ],
+      "answerIndex": 2,
+      "explanation": "Handler chỉ nên phụ thuộc repository abstraction để giảm coupling với implementation."
+    },
+    {
+      "id": "cp3-l1-006",
+      "level": "L1 - Foundation",
+      "tag": "Mapping",
+      "question": "Trong Buổi 12, vì sao không nên bind thẳng HTTP request vào Command?",
+      "options": [
+        "Vì Command không thể dùng với MediatR",
+        "Vì HTTP contract và Application use case có thể thay đổi khác nhau",
+        "Vì Minimal API không hỗ trợ bind Command",
+        "Vì FluentValidation chỉ validate được request"
+      ],
+      "answerIndex": 1,
+      "explanation": "Request là API contract, Command là use case contract; tách ra giúp boundary rõ hơn."
+    },
+    {
+      "id": "cp3-l1-007",
+      "level": "L1 - Foundation",
+      "tag": "Validation",
+      "question": "FluentValidation trong Buổi 12 chủ yếu dùng để làm gì?",
+      "options": [
+        "Validate input để trả lỗi 400 rõ ràng cho client",
+        "Thay thế hoàn toàn domain invariant",
+        "Validate JWT signature",
+        "Tạo mapping Product sang ProductDto"
+      ],
+      "answerIndex": 0,
+      "explanation": "Validator kiểm tra input sớm để trả lỗi đẹp; Domain vẫn là lớp phòng thủ cuối."
+    },
+    {
+      "id": "cp3-l1-008",
+      "level": "L1 - Foundation",
+      "tag": "Mapping",
+      "question": "ProductMapper trong Buổi 12 giải quyết vấn đề gì?",
+      "options": [
+        "Tạo database migration",
+        "Gom logic map Product → ProductDto để tránh lặp mapping",
+        "Tạo JWT token",
+        "Validate Role Admin"
+      ],
+      "answerIndex": 1,
+      "explanation": "ProductMapper giúp mapping rõ ràng và giảm trùng lặp trong handler."
+    },
+    {
+      "id": "cp3-l1-009",
+      "level": "L1 - Foundation",
+      "tag": "JWT",
+      "question": "JWT gồm mấy phần chính?",
+      "options": [
+        "Header, Payload, Signature",
+        "Issuer, Audience, Secret",
+        "Username, Password, Role",
+        "Request, Command, DTO"
+      ],
+      "answerIndex": 0,
+      "explanation": "JWT có 3 phần: Header.Payload.Signature."
+    },
+    {
+      "id": "cp3-l1-010",
+      "level": "L1 - Foundation",
+      "tag": "JWT",
+      "question": "JWT payload có nên chứa password không?",
+      "options": [
+        "Có, vì payload được mã hóa tuyệt đối",
+        "Không, vì payload có thể decode được",
+        "Có, nếu password đã hash bằng SHA256",
+        "Không, vì JWT không hỗ trợ string"
+      ],
+      "answerIndex": 1,
+      "explanation": "JWT payload đọc được bằng decode base64url, không nên chứa secret/password."
+    },
+    {
+      "id": "cp3-l1-011",
+      "level": "L1 - Foundation",
+      "tag": "Auth",
+      "question": "Authentication trả lời câu hỏi nào?",
+      "options": [
+        "Bạn được phép làm gì?",
+        "Bạn là ai?",
+        "Database nằm ở đâu?",
+        "API dùng port nào?"
+      ],
+      "answerIndex": 1,
+      "explanation": "Authentication xác định identity của user."
+    },
+    {
+      "id": "cp3-l1-012",
+      "level": "L1 - Foundation",
+      "tag": "Auth",
+      "question": "Authorization trả lời câu hỏi nào?",
+      "options": [
+        "Bạn là ai?",
+        "Bạn dùng browser nào?",
+        "Bạn được phép làm gì?",
+        "Token dài bao nhiêu ký tự?"
+      ],
+      "answerIndex": 2,
+      "explanation": "Authorization kiểm tra quyền truy cập/hành động của user."
+    },
+    {
+      "id": "cp3-l1-013",
+      "level": "L1 - Foundation",
+      "tag": "Security",
+      "question": "Trong Buổi 14, policy AdminOnly yêu cầu gì?",
+      "options": [
+        "User có role Admin",
+        "User có username là admin bất kể token",
+        "Request đi qua Gateway",
+        "User có basket trong Redis"
+      ],
+      "answerIndex": 0,
+      "explanation": "AdminOnly được cấu hình bằng RequireRole(\"Admin\")."
+    },
+    {
+      "id": "cp3-l1-014",
+      "level": "L1 - Foundation",
+      "tag": "HTTP Status",
+      "question": "401 Unauthorized thường nghĩa là gì trong bài security?",
+      "options": [
+        "Token hợp lệ nhưng thiếu quyền",
+        "Thiếu token, token sai hoặc token hết hạn",
+        "Request body validate fail",
+        "Database connection fail"
+      ],
+      "answerIndex": 1,
+      "explanation": "401 xảy ra khi authentication không hợp lệ."
+    },
+    {
+      "id": "cp3-l1-015",
+      "level": "L1 - Foundation",
+      "tag": "HTTP Status",
+      "question": "403 Forbidden thường nghĩa là gì trong bài security?",
+      "options": [
+        "Token hợp lệ nhưng không đủ quyền",
+        "Không có token",
+        "Endpoint không tồn tại",
+        "Validation price âm"
+      ],
+      "answerIndex": 0,
+      "explanation": "403 là đã authenticated nhưng authorization fail."
+    },
+    {
+      "id": "cp3-l2-016",
+      "level": "L2 - Applied",
+      "tag": "Clean Architecture",
+      "question": "Flow runtime của GET /products/{id} sau Buổi 11 đúng nhất là gì?",
+      "options": [
+        "Endpoint → SQL trực tiếp → DB → ProductDto",
+        "Endpoint → MediatR → Handler → IProductRepository → DapperProductRepository → DB",
+        "DapperProductRepository → Handler → Endpoint → DB",
+        "Domain → API → Infrastructure → Application"
+      ],
+      "answerIndex": 1,
+      "explanation": "Runtime flow đi từ API vào handler rồi repository interface đến implementation và DB."
+    },
+    {
+      "id": "cp3-l2-017",
+      "level": "L2 - Applied",
+      "tag": "Dependency Rule",
+      "question": "Câu nào mô tả đúng khác biệt runtime flow và code dependency?",
+      "options": [
+        "Hai khái niệm giống hệt nhau",
+        "Runtime có thể đi tới DB, nhưng code bên trong chỉ phụ thuộc abstraction, không phụ thuộc implementation ngoài",
+        "Code dependency phải đi từ DB về API",
+        "Nếu runtime gọi DB thì Handler bắt buộc using Dapper"
+      ],
+      "answerIndex": 1,
+      "explanation": "Handler gọi repository qua interface; implementation DB được DI nối ở runtime."
+    },
+    {
+      "id": "cp3-l2-018",
+      "level": "L2 - Applied",
+      "tag": "Repository",
+      "question": "Vì sao Repository nên trả Product thay vì ProductDto?",
+      "options": [
+        "Vì ProductDto không serialize được",
+        "Vì Repository phục vụ nghiệp vụ/domain, không nên trả response DTO",
+        "Vì Dapper chỉ map được Domain",
+        "Vì API không dùng ProductDto"
+      ],
+      "answerIndex": 1,
+      "explanation": "Repository nên làm việc với Domain model, DTO là dữ liệu phục vụ use case/API output."
+    },
+    {
+      "id": "cp3-l2-019",
+      "level": "L2 - Applied",
+      "tag": "Infrastructure",
+      "question": "Nếu đổi SQLite sang PostgreSQL, layer nào nên thay đổi nhiều nhất?",
+      "options": [
+        "Domain",
+        "Application",
+        "Infrastructure và configuration",
+        "API endpoint contract"
+      ],
+      "answerIndex": 2,
+      "explanation": "DB là technical detail, nằm ở Infrastructure/config."
+    },
+    {
+      "id": "cp3-l2-020",
+      "level": "L2 - Applied",
+      "tag": "Program.cs",
+      "question": "Program.cs sau refactor Clean Architecture nên giữ vai trò gì?",
+      "options": [
+        "Chứa toàn bộ SQL CRUD",
+        "Register services, build app, map endpoints",
+        "Chứa mọi Handler để dễ debug",
+        "Chứa tất cả domain invariant"
+      ],
+      "answerIndex": 1,
+      "explanation": "Program.cs nên gọn, tập trung composition root và pipeline mapping."
+    },
+    {
+      "id": "cp3-l2-021",
+      "level": "L2 - Applied",
+      "tag": "Validation",
+      "question": "Vì sao Domain vẫn cần validate Name/Price dù đã có FluentValidation?",
+      "options": [
+        "Vì FluentValidation không chạy trong .NET",
+        "Vì Domain là lớp phòng thủ cuối, không tin mọi caller đều validate đúng",
+        "Vì Domain validate để trả HTTP 400 đẹp hơn",
+        "Vì Dapper yêu cầu Domain validate"
+      ],
+      "answerIndex": 1,
+      "explanation": "Domain invariant bảo vệ nghiệp vụ khi có caller khác ngoài HTTP endpoint."
+    },
+    {
+      "id": "cp3-l2-022",
+      "level": "L2 - Applied",
+      "tag": "Validation",
+      "question": "Invalid CreateProduct request nên trả gì trong Buổi 12?",
+      "options": [
+        "201 Created nhưng warning",
+        "400 Bad Request với validation errors",
+        "500 Internal Server Error",
+        "204 No Content"
+      ],
+      "answerIndex": 1,
+      "explanation": "FluentValidation ở endpoint trả Results.ValidationProblem, tương ứng 400."
+    },
+    {
+      "id": "cp3-l2-023",
+      "level": "L2 - Applied",
+      "tag": "Mapping",
+      "question": "Flow mapping đúng trong Buổi 12 là gì?",
+      "options": [
+        "HTTP Request → ProductDto → Product → Command",
+        "CreateProductRequest → CreateProductCommand → Product → ProductDto",
+        "ProductDto → SQL → CreateProductRequest",
+        "Domain Product → HTTP Request → Command"
+      ],
+      "answerIndex": 1,
+      "explanation": "API request map sang command; handler tạo Product; mapper trả ProductDto."
+    },
+    {
+      "id": "cp3-l2-024",
+      "level": "L2 - Applied",
+      "tag": "CQRS",
+      "question": "Command khác Query ở điểm nào trong ngữ cảnh bài 11–12?",
+      "options": [
+        "Command thường đại diện hành động thay đổi/xử lý; Query đại diện đọc dữ liệu",
+        "Command chỉ dùng cho HTTP GET",
+        "Query luôn insert dữ liệu",
+        "Command không dùng với MediatR"
+      ],
+      "answerIndex": 0,
+      "explanation": "Create/Update/Delete là command; Get là query."
+    },
+    {
+      "id": "cp3-l2-025",
+      "level": "L2 - Applied",
+      "tag": "JWT",
+      "question": "API validate JWT bằng những yếu tố nào là phù hợp nhất?",
+      "options": [
+        "Issuer, Audience, Signing Key, Lifetime/Signature",
+        "Username/password plain text trong header",
+        "Port của IdentityService",
+        "Tên project trong solution"
+      ],
+      "answerIndex": 0,
+      "explanation": "Validate issuer, audience, signing key/signature và lifetime là các phần quan trọng."
+    },
+    {
+      "id": "cp3-l2-026",
+      "level": "L2 - Applied",
+      "tag": "JWT",
+      "question": "Nếu CatalogService dùng SecretKey khác IdentityService, chuyện gì xảy ra?",
+      "options": [
+        "Token vẫn hợp lệ vì cùng issuer",
+        "Token bị validate fail do signature không khớp",
+        "Chỉ role bị mất, token vẫn pass",
+        "Swagger tự sửa key"
+      ],
+      "answerIndex": 1,
+      "explanation": "HS256 dùng shared secret, key lệch thì signature validate fail."
+    },
+    {
+      "id": "cp3-l2-027",
+      "level": "L2 - Applied",
+      "tag": "JWT",
+      "question": "Nếu Audience trong token khác Audience mà API expect, chuyện gì xảy ra?",
+      "options": [
+        "API vẫn cho qua nếu role đúng",
+        "Token validate fail khi ValidateAudience = true",
+        "Chỉ trả 403, không bao giờ 401",
+        "Token tự đổi audience"
+      ],
+      "answerIndex": 1,
+      "explanation": "Audience mismatch là authentication failure, thường dẫn đến 401."
+    },
+    {
+      "id": "cp3-l2-028",
+      "level": "L2 - Applied",
+      "tag": "Middleware",
+      "question": "Thứ tự middleware đúng trong CatalogService là gì?",
+      "options": [
+        "UseAuthorization rồi UseAuthentication",
+        "UseAuthentication rồi UseAuthorization",
+        "MapProductEndpoints rồi UseAuthentication",
+        "Không cần middleware nếu có RequireAuthorization"
+      ],
+      "answerIndex": 1,
+      "explanation": "Authentication phải chạy trước Authorization."
+    },
+    {
+      "id": "cp3-l2-029",
+      "level": "L2 - Applied",
+      "tag": "Security",
+      "question": "GET /products và POST /products trong Buổi 14 nên khác nhau thế nào?",
+      "options": [
+        "Cả hai đều public",
+        "GET public, POST cần AdminOnly",
+        "GET cần AdminOnly, POST public",
+        "Cả hai đều bị disable"
+      ],
+      "answerIndex": 1,
+      "explanation": "Bài 14 giữ GET public, protect write endpoints."
+    },
+    {
+      "id": "cp3-l2-030",
+      "level": "L2 - Applied",
+      "tag": "Security",
+      "question": "Nếu request POST /products không có token, expected response là gì?",
+      "options": [
+        "201 Created",
+        "400 Bad Request",
+        "401 Unauthorized",
+        "403 Forbidden"
+      ],
+      "answerIndex": 2,
+      "explanation": "Không có token là chưa authenticated nên 401."
+    },
+    {
+      "id": "cp3-l2-031",
+      "level": "L2 - Applied",
+      "tag": "Security",
+      "question": "Nếu user có token hợp lệ role Customer gọi POST /products cần AdminOnly, expected response là gì?",
+      "options": [
+        "401 Unauthorized",
+        "403 Forbidden",
+        "201 Created",
+        "404 Not Found"
+      ],
+      "answerIndex": 1,
+      "explanation": "Token hợp lệ nhưng thiếu role Admin nên authorization fail: 403."
+    },
+    {
+      "id": "cp3-l2-032",
+      "level": "L2 - Applied",
+      "tag": "Claims",
+      "question": "Role trong JWT thực chất là gì?",
+      "options": [
+        "Một loại database index",
+        "Một claim đặc biệt dùng để nhóm quyền",
+        "Một cookie server-side",
+        "Một field bắt buộc trong HTTP body"
+      ],
+      "answerIndex": 1,
+      "explanation": "Role thường được biểu diễn dưới dạng claim."
+    },
+    {
+      "id": "cp3-l2-033",
+      "level": "L2 - Applied",
+      "tag": "Identity",
+      "question": "IdentityService trong Buổi 13 làm việc gì?",
+      "options": [
+        "Validate token cho mọi service trong runtime",
+        "Login user demo và phát JWT",
+        "Lưu product vào SQLite",
+        "Consume RabbitMQ messages"
+      ],
+      "answerIndex": 1,
+      "explanation": "IdentityService baseline có /auth/login và /auth/me."
+    },
+    {
+      "id": "cp3-l2-034",
+      "level": "L2 - Applied",
+      "tag": "Security",
+      "question": "CatalogService có nên tự phát JWT trong Buổi 14 không?",
+      "options": [
+        "Có, mỗi service tự phát token cho nhanh",
+        "Không, CatalogService chỉ validate token do IdentityService phát hành",
+        "Có, nếu endpoint là POST",
+        "Không, vì JWT chỉ dùng với Gateway"
+      ],
+      "answerIndex": 1,
+      "explanation": "Token issuance thuộc IdentityService; resource services validate token."
+    },
+    {
+      "id": "cp3-l2-035",
+      "level": "L2 - Applied",
+      "tag": "Testing",
+      "question": "Checkpoint 3 nên chứng minh tối thiểu điều gì qua Postman?",
+      "options": [
+        "Products API vẫn chạy, invalid request 400, login JWT OK, protected endpoint trả 401/403/201 đúng",
+        "Chỉ cần build pass, không cần gọi API",
+        "Chỉ cần tạo Docker image",
+        "Chỉ cần chạy RabbitMQ"
+      ],
+      "answerIndex": 0,
+      "explanation": "Checkpoint 3 khóa Clean/Validation/JWT/Role nên cần regression test các flow này."
+    },
+    {
+      "id": "cp3-l3-036",
+      "level": "L3 - Advanced",
+      "tag": "Architecture Trade-off",
+      "question": "Vì sao Buổi 11 chọn folder-based architecture trước thay vì project-based architecture ngay?",
+      "options": [
+        "Vì project-based không dùng được với .NET",
+        "Vì giảm độ rối, tập trung kỷ luật dependency trước, chưa cần compile-time enforcement quá sớm",
+        "Vì folder-based tự động chặn using sai",
+        "Vì Clean Architecture bắt buộc chỉ được dùng một project"
+      ],
+      "answerIndex": 1,
+      "explanation": "Giai đoạn foundation ưu tiên học dependency rule và refactor vừa đủ; project-based để sau khi service lớn hơn."
+    },
+    {
+      "id": "cp3-l3-037",
+      "level": "L3 - Advanced",
+      "tag": "Architecture Trade-off",
+      "question": "Điểm yếu lớn nhất của folder-based Clean Architecture là gì?",
+      "options": [
+        "Không thể chạy trên Linux",
+        "Compiler chưa chặn được dependency sai giữa folders trong cùng project",
+        "Không thể dùng Dapper",
+        "Không thể dùng MediatR"
+      ],
+      "answerIndex": 1,
+      "explanation": "Trong cùng một csproj, code vẫn có thể using sai nếu dev không kỷ luật."
+    },
+    {
+      "id": "cp3-l3-038",
+      "level": "L3 - Advanced",
+      "tag": "Architecture Smell",
+      "question": "Dấu hiệu nào cho thấy endpoint đang vi phạm mục tiêu Buổi 11?",
+      "options": [
+        "Endpoint gọi ISender.Send(command)",
+        "Endpoint chứa SQL hoặc gọi repository trực tiếp",
+        "Endpoint map route parameter sang command",
+        "Endpoint trả Results.Ok"
+      ],
+      "answerIndex": 1,
+      "explanation": "Endpoint nên mỏng, không chứa SQL/data access/business rule nặng."
+    },
+    {
+      "id": "cp3-l3-039",
+      "level": "L3 - Advanced",
+      "tag": "Architecture Smell",
+      "question": "Dấu hiệu nào cho thấy Handler đang coupling sai với Infrastructure?",
+      "options": [
+        "Handler nhận IProductRepository qua constructor",
+        "Handler dùng Product domain model",
+        "Handler new DapperProductRepository hoặc using Infrastructure.Persistence",
+        "Handler trả ProductDto"
+      ],
+      "answerIndex": 2,
+      "explanation": "Handler không nên biết concrete repository implementation."
+    },
+    {
+      "id": "cp3-l3-040",
+      "level": "L3 - Advanced",
+      "tag": "Mapping Trade-off",
+      "question": "Vì sao không nên đặt DTO tên ProductResponse trong Application nếu gRPC đã sinh ProductResponse?",
+      "options": [
+        "Vì record không hỗ trợ tên ProductResponse",
+        "Vì dễ nhầm namespace/ambiguous type giữa Application DTO và generated gRPC response",
+        "Vì HTTP không thể serialize ProductResponse",
+        "Vì Dapper không map ProductResponse"
+      ],
+      "answerIndex": 1,
+      "explanation": "Dùng ProductDto trong Application giúp tránh đụng tên với generated gRPC types."
+    },
+    {
+      "id": "cp3-l3-041",
+      "level": "L3 - Advanced",
+      "tag": "Validation Design",
+      "question": "Nếu sau này có gRPC cũng tạo Product, đặt validation ở Command có lợi gì?",
+      "options": [
+        "gRPC không cần validate nữa vì HTTP đã validate",
+        "Nhiều caller có thể dùng chung use case/command và cùng rule validation",
+        "Command sẽ tự tạo database table",
+        "Validator sẽ tự map protobuf"
+      ],
+      "answerIndex": 1,
+      "explanation": "Validation theo use case có thể tái sử dụng giữa HTTP/gRPC/message consumer."
+    },
+    {
+      "id": "cp3-l3-042",
+      "level": "L3 - Advanced",
+      "tag": "Security Design",
+      "question": "Vì sao chỉ dùng role Admin/Customer có thể chưa đủ cho các case ownership như xem order của mình?",
+      "options": [
+        "Vì role không encode được resource ownership cụ thể; cần userId/sub hoặc claim/logic kiểm tra owner",
+        "Vì role không thể nằm trong JWT",
+        "Vì Admin không thể xem order",
+        "Vì Customer token luôn 401"
+      ],
+      "answerIndex": 0,
+      "explanation": "Authorization theo ownership cần so sánh userId trong claim với resource owner, không chỉ role."
+    },
+    {
+      "id": "cp3-l3-043",
+      "level": "L3 - Advanced",
+      "tag": "JWT Security",
+      "question": "Vì sao JWT cần expiration ngắn hợp lý?",
+      "options": [
+        "Để token đẹp hơn khi decode",
+        "Để giảm rủi ro nếu token bị lộ",
+        "Để API chạy nhanh hơn",
+        "Để role luôn là Admin"
+      ],
+      "answerIndex": 1,
+      "explanation": "Token bị lộ mà sống quá lâu sẽ tăng rủi ro bảo mật."
+    },
+    {
+      "id": "cp3-l3-044",
+      "level": "L3 - Advanced",
+      "tag": "JWT Security",
+      "question": "Phát biểu nào đúng nhất về JWT trong bài 13?",
+      "options": [
+        "JWT là session server-side",
+        "JWT là token có chữ ký chứa claims và thời hạn hết hạn",
+        "JWT payload được mã hóa nên lưu secret được",
+        "JWT không cần validate signature"
+      ],
+      "answerIndex": 1,
+      "explanation": "JWT không phải session; nó là signed token có claims và exp."
+    },
+    {
+      "id": "cp3-l3-045",
+      "level": "L3 - Advanced",
+      "tag": "Security Trade-off",
+      "question": "Vì sao không nên mặc định service nội bộ là an toàn tuyệt đối?",
+      "options": [
+        "Vì internal network vẫn có thể bị cấu hình sai, lộ credential, bypass gateway hoặc bị lateral movement",
+        "Vì internal service không dùng HTTP",
+        "Vì JWT không thể dùng nội bộ",
+        "Vì chỉ frontend mới cần security"
+      ],
+      "answerIndex": 0,
+      "explanation": "Production cần secure internal calls, không chỉ bảo vệ public edge."
+    },
+    {
+      "id": "cp3-l3-046",
+      "level": "L3 - Advanced",
+      "tag": "Error Reasoning",
+      "question": "POST /products có Bearer token nhưng vẫn trả 401. Nguyên nhân nào hợp lý nhất?",
+      "options": [
+        "Role là Customer",
+        "Issuer/Audience/SigningKey/Lifetime validate fail",
+        "User không đủ quyền Admin",
+        "Endpoint không có body"
+      ],
+      "answerIndex": 1,
+      "explanation": "401 là authentication fail; role không đủ thường là 403."
+    },
+    {
+      "id": "cp3-l3-047",
+      "level": "L3 - Advanced",
+      "tag": "Error Reasoning",
+      "question": "POST /products có token hợp lệ nhưng trả 403. Nguyên nhân nào hợp lý nhất?",
+      "options": [
+        "Token thiếu/sai signature",
+        "Token hết hạn",
+        "Token hợp lệ nhưng role không thỏa AdminOnly",
+        "CatalogService chưa chạy"
+      ],
+      "answerIndex": 2,
+      "explanation": "403 là authenticated nhưng không authorized."
+    },
+    {
+      "id": "cp3-l3-048",
+      "level": "L3 - Advanced",
+      "tag": "ADR",
+      "question": "ADR ở Checkpoint 3 nên ghi lại điều gì?",
+      "options": [
+        "Lý do chọn Clean Architecture baseline, validation/mapping boundary, JWT/security baseline",
+        "Password admin thật của production",
+        "Toàn bộ source code copy vào một file",
+        "Danh sách màu UI"
+      ],
+      "answerIndex": 0,
+      "explanation": "ADR ghi quyết định kiến trúc và trade-off, không lưu secrets."
+    },
+    {
+      "id": "cp3-l3-049",
+      "level": "L3 - Advanced",
+      "tag": "Portfolio",
+      "question": "Khi phỏng vấn, câu nào thể hiện hiểu sâu hơn về Phase 1.3?",
+      "options": [
+        "Tôi đã tạo nhiều folder nên là Clean Architecture",
+        "Tôi tách API/Application/Domain/Infrastructure để endpoint mỏng, handler phụ thuộc abstraction, persistence nằm ngoài; sau đó thêm validation/mapping và JWT authorization baseline",
+        "Tôi dùng JWT nên không cần authorization",
+        "Tôi để mọi thứ trong Program.cs cho dễ debug"
+      ],
+      "answerIndex": 1,
+      "explanation": "Câu này nêu đúng mục tiêu, boundary, dependency và security baseline."
+    },
+    {
+      "id": "cp3-l3-050",
+      "level": "L3 - Advanced",
+      "tag": "Scope Control",
+      "question": "Việc nào KHÔNG nên nhồi vào Checkpoint 3?",
+      "options": [
+        "Review Clean Architecture",
+        "Test validation 400",
+        "Test 401/403/201",
+        "Implement full OIDC/SSO/RefreshToken/Keycloak production"
+      ],
+      "answerIndex": 3,
+      "explanation": "OIDC/SSO/refresh token là topic nâng cao, không thuộc scope checkpoint 3 foundation."
+    }
+  ]
+}

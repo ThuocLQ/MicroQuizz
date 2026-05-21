@@ -1,0 +1,722 @@
+{
+  "title": "Checkpoint 4 - Ordering + Checkout + Discount + Payment/Webhook",
+  "description": "50 câu trắc nghiệm nhiều level cho Phase 1.4 của MicroShop. Đáp án nhiễu khó hơn, tập trung service boundary, consistency, idempotency, webhook và readiness sang RabbitMQ.",
+  "version": "2.0",
+  "questionCount": 50,
+  "levels": [
+    {
+      "id": "L1 - Foundation",
+      "description": "Nhớ khái niệm, boundary, endpoint và status code cốt lõi."
+    },
+    {
+      "id": "L2 - Applied",
+      "description": "Áp dụng vào flow, debug lỗi, đọc thiết kế hiện tại."
+    },
+    {
+      "id": "L3 - Advanced",
+      "description": "Trade-off, production risk, phỏng vấn và system design mindset."
+    }
+  ],
+  "questions": [
+    {
+      "id": "cp4-l1-001",
+      "level": "L1 - Foundation",
+      "tag": "Checkpoint",
+      "question": "Mục tiêu chính của Checkpoint 4 là gì?",
+      "options": [
+        "Học thêm RabbitMQ và viết event đầu tiên ngay",
+        "Review, test, cleanup nhẹ và khóa Phase 1.4 trước khi sang RabbitMQ",
+        "Thêm InventoryService và ShippingService vào roadmap core",
+        "Rewrite toàn bộ service sang monolith"
+      ],
+      "answerIndex": 1,
+      "explanation": "Checkpoint 4 là điểm dừng để review Phase 1.4, chạy regression test và chuẩn bị sang Phase 1.5."
+    },
+    {
+      "id": "cp4-l1-002",
+      "level": "L1 - Foundation",
+      "tag": "Phase Scope",
+      "question": "Phase 1.4 gồm các bài nào?",
+      "options": [
+        "Buổi 11–14: Clean, Validation, Identity, Role/Claim",
+        "Buổi 15–18: Ordering, Checkout, Discount, Payment/Webhook",
+        "Buổi 19–23: RabbitMQ, Worker, Retry/DLQ, Outbox",
+        "Buổi 24–27: Kafka, MongoDB Projection"
+      ],
+      "answerIndex": 1,
+      "explanation": "Phase 1.4 khóa các bài 15–18."
+    },
+    {
+      "id": "cp4-l1-003",
+      "level": "L1 - Foundation",
+      "tag": "Ordering",
+      "question": "OrderingService chịu trách nhiệm chính việc gì?",
+      "options": [
+        "Quản lý basket Redis",
+        "Tạo và quản lý order/order items",
+        "Tính mã giảm giá",
+        "Nhận webhook payment"
+      ],
+      "answerIndex": 1,
+      "explanation": "OrderingService sở hữu Order và OrderItem."
+    },
+    {
+      "id": "cp4-l1-004",
+      "level": "L1 - Foundation",
+      "tag": "Basket",
+      "question": "BasketService chịu trách nhiệm chính việc gì?",
+      "options": [
+        "Giữ giỏ hàng của user",
+        "Tạo payment Pending",
+        "Validate coupon SAVE10",
+        "Cấp JWT"
+      ],
+      "answerIndex": 0,
+      "explanation": "BasketService quản lý basket data."
+    },
+    {
+      "id": "cp4-l1-005",
+      "level": "L1 - Foundation",
+      "tag": "Discount",
+      "question": "DiscountService chịu trách nhiệm chính việc gì?",
+      "options": [
+        "Tính coupon/discount rule",
+        "Ghi order vào database",
+        "Clear basket",
+        "Validate JWT token"
+      ],
+      "answerIndex": 0,
+      "explanation": "DiscountService quản lý coupon validation và discount calculation."
+    },
+    {
+      "id": "cp4-l1-006",
+      "level": "L1 - Foundation",
+      "tag": "Payment",
+      "question": "PaymentService trong Phase 1.4 làm gì?",
+      "options": [
+        "Tạo payment và nhận webhook payment",
+        "Quản lý sản phẩm",
+        "Clear basket sau checkout",
+        "Gọi Redis để lấy basket"
+      ],
+      "answerIndex": 0,
+      "explanation": "PaymentService baseline tạo payment Pending và update status qua webhook."
+    },
+    {
+      "id": "cp4-l1-007",
+      "level": "L1 - Foundation",
+      "tag": "Webhook",
+      "question": "Webhook là gì?",
+      "options": [
+        "Message trong Kafka",
+        "HTTP callback từ hệ thống bên ngoài gọi vào hệ thống của mình",
+        "Một loại database index",
+        "Một JWT claim"
+      ],
+      "answerIndex": 1,
+      "explanation": "Webhook vẫn là HTTP nhưng do provider/external system chủ động gọi vào mình."
+    },
+    {
+      "id": "cp4-l1-008",
+      "level": "L1 - Foundation",
+      "tag": "PaymentStatus",
+      "question": "Payment mới tạo bằng POST /payments có status mặc định gì?",
+      "options": [
+        "Pending",
+        "Succeeded",
+        "Failed",
+        "Refunded"
+      ],
+      "answerIndex": 0,
+      "explanation": "Bài 18 tạo payment ở trạng thái Pending."
+    },
+    {
+      "id": "cp4-l1-009",
+      "level": "L1 - Foundation",
+      "tag": "API",
+      "question": "Endpoint nào dùng để nhận provider callback payment?",
+      "options": [
+        "POST /payments",
+        "GET /payments/{id}",
+        "POST /webhooks/payment",
+        "POST /discounts/apply"
+      ],
+      "answerIndex": 2,
+      "explanation": "POST /webhooks/payment nhận trạng thái SUCCEEDED/FAILED từ provider giả lập."
+    },
+    {
+      "id": "cp4-l1-010",
+      "level": "L1 - Foundation",
+      "tag": "API",
+      "question": "Endpoint nào dùng để apply coupon?",
+      "options": [
+        "POST /discounts/apply",
+        "POST /checkout",
+        "POST /webhooks/payment",
+        "GET /orders"
+      ],
+      "answerIndex": 0,
+      "explanation": "DiscountService có POST /discounts/apply để tính discount."
+    },
+    {
+      "id": "cp4-l1-011",
+      "level": "L1 - Foundation",
+      "tag": "Discount",
+      "question": "Coupon SAVE10 với orderAmount 2197 kỳ vọng discountAmount là bao nhiêu?",
+      "options": [
+        "219.7",
+        "1977.3",
+        "50",
+        "0"
+      ],
+      "answerIndex": 0,
+      "explanation": "SAVE10 giảm 10%, nên 2197 * 10% = 219.7."
+    },
+    {
+      "id": "cp4-l1-012",
+      "level": "L1 - Foundation",
+      "tag": "Discount",
+      "question": "Coupon NOTFOUND nên trả kết quả nào?",
+      "options": [
+        "isValid=false, discountAmount=0",
+        "isValid=true, discountAmount=100",
+        "HTTP 500",
+        "Tự tạo coupon mới"
+      ],
+      "answerIndex": 0,
+      "explanation": "Coupon không tồn tại không được áp dụng."
+    },
+    {
+      "id": "cp4-l1-013",
+      "level": "L1 - Foundation",
+      "tag": "Payment",
+      "question": "Webhook success nên chuyển Payment sang status nào?",
+      "options": [
+        "Pending",
+        "Succeeded",
+        "Failed",
+        "Deleted"
+      ],
+      "answerIndex": 1,
+      "explanation": "Status SUCCEEDED từ webhook cập nhật payment thành Succeeded."
+    },
+    {
+      "id": "cp4-l1-014",
+      "level": "L1 - Foundation",
+      "tag": "Postman",
+      "question": "Postman environment checkpoint 4 nên có biến nào?",
+      "options": [
+        "identity_url, catalog_url, basket_url, ordering_url, discount_url, payment_url",
+        "only frontend_url",
+        "oracle_sid only",
+        "github_token public"
+      ],
+      "answerIndex": 0,
+      "explanation": "Checkpoint 4 test nhiều service nên cần URL từng service."
+    },
+    {
+      "id": "cp4-l1-015",
+      "level": "L1 - Foundation",
+      "tag": "Next Phase",
+      "question": "Sau Checkpoint 4, bài tiếp theo đúng lộ trình là gì?",
+      "options": [
+        "Buổi 19: RabbitMQ Intro + First Integration Event",
+        "Buổi 19: ShippingService",
+        "Buổi 19: OIDC SSO Production",
+        "Buổi 19: Rewrite UI"
+      ],
+      "answerIndex": 0,
+      "explanation": "Sau Phase 1.4 là Phase 1.5 RabbitMQ + Reliability."
+    },
+    {
+      "id": "cp4-l2-016",
+      "level": "L2 - Applied",
+      "tag": "Boundary",
+      "question": "Câu nào đúng nhất về service boundary trong Phase 1.4?",
+      "options": [
+        "OrderingService tự tính coupon phức tạp để giảm network call",
+        "DiscountService tạo order để giữ coupon snapshot",
+        "PaymentService không quản lý basket, chỉ payment/webhook",
+        "BasketService ghi trực tiếp order table"
+      ],
+      "answerIndex": 2,
+      "explanation": "PaymentService boundary là payment records và webhook handling."
+    },
+    {
+      "id": "cp4-l2-017",
+      "level": "L2 - Applied",
+      "tag": "Checkout",
+      "question": "Checkout baseline trong Buổi 16 đi theo flow nào?",
+      "options": [
+        "OrderingService → Kafka → PaymentService → BasketService",
+        "POST /checkout → OrderingService → IBasketClient.GetBasketAsync → tạo Order → ClearBasket",
+        "POST /payments → CreateOrder → ApplyDiscount",
+        "DiscountService → BasketService → IdentityService"
+      ],
+      "answerIndex": 1,
+      "explanation": "Checkout baseline dùng REST/IBasketClient lấy basket, tạo order rồi clear basket."
+    },
+    {
+      "id": "cp4-l2-018",
+      "level": "L2 - Applied",
+      "tag": "Abstraction",
+      "question": "Vì sao OrderingService không nên đọc trực tiếp Redis của BasketService?",
+      "options": [
+        "Vì Redis không hỗ trợ C#",
+        "Vì sẽ phá service boundary và coupling vào storage nội bộ của BasketService",
+        "Vì REST luôn nhanh hơn Redis",
+        "Vì BasketService không có dữ liệu"
+      ],
+      "answerIndex": 1,
+      "explanation": "Storage của BasketService là implementation detail, service khác không nên đọc trực tiếp."
+    },
+    {
+      "id": "cp4-l2-019",
+      "level": "L2 - Applied",
+      "tag": "Risk",
+      "question": "Risk nào có thể xảy ra nếu order tạo thành công nhưng ClearBasket fail?",
+      "options": [
+        "User retry checkout có thể tạo order trùng",
+        "JWT tự hết hạn ngay",
+        "Coupon tự disable",
+        "Payment webhook không compile"
+      ],
+      "answerIndex": 0,
+      "explanation": "Basket còn hàng khiến user có thể retry và tạo duplicate order."
+    },
+    {
+      "id": "cp4-l2-020",
+      "level": "L2 - Applied",
+      "tag": "Risk",
+      "question": "Nếu BasketService down khi checkout, vấn đề chính là gì?",
+      "options": [
+        "OrderingService không lấy được basket nên checkout fail",
+        "DiscountService không build",
+        "PaymentService tự succeeded",
+        "CatalogService mất secret"
+      ],
+      "answerIndex": 0,
+      "explanation": "Checkout đang call BasketService sync qua HTTP client abstraction."
+    },
+    {
+      "id": "cp4-l2-021",
+      "level": "L2 - Applied",
+      "tag": "Resilience",
+      "question": "Pattern nào sẽ học sau để xử lý downstream call dễ lỗi như BasketService down?",
+      "options": [
+        "Timeout, retry, circuit breaker, observability",
+        "CSS dark mode",
+        "Only ProductMapper",
+        "JWT audience"
+      ],
+      "answerIndex": 0,
+      "explanation": "Resilience patterns giúp kiểm soát lỗi khi gọi service khác."
+    },
+    {
+      "id": "cp4-l2-022",
+      "level": "L2 - Applied",
+      "tag": "Discount Design",
+      "question": "Vì sao DiscountService không chỉ là CRUD coupon?",
+      "options": [
+        "Vì nó cần đóng gói rule tính giảm giá và strategy",
+        "Vì nó phải tạo order",
+        "Vì nó phải lưu basket",
+        "Vì nó phát JWT"
+      ],
+      "answerIndex": 0,
+      "explanation": "DiscountService quản lý logic tính discount, không chỉ lưu/cập nhật coupon."
+    },
+    {
+      "id": "cp4-l2-023",
+      "level": "L2 - Applied",
+      "tag": "Pattern",
+      "question": "Strategy Pattern trong DiscountService giúp gì?",
+      "options": [
+        "Tách từng cách tính discount thành class riêng, tránh if/else dài",
+        "Tạo database index cho coupon",
+        "Bắt buộc dùng Kafka",
+        "Encrypt JWT"
+      ],
+      "answerIndex": 0,
+      "explanation": "Percentage và FixedAmount có thể là các strategy khác nhau."
+    },
+    {
+      "id": "cp4-l2-024",
+      "level": "L2 - Applied",
+      "tag": "Payment",
+      "question": "PaymentWebhookHandler nên làm gì khi paymentId không tồn tại?",
+      "options": [
+        "Tạo payment mới auto succeeded",
+        "Trả NotFound/không xử lý như payment hợp lệ",
+        "Xóa order tương ứng",
+        "Clear basket"
+      ],
+      "answerIndex": 1,
+      "explanation": "Webhook không nên tạo payment mới nếu không tìm thấy payment record hợp lệ."
+    },
+    {
+      "id": "cp4-l2-025",
+      "level": "L2 - Applied",
+      "tag": "Payment",
+      "question": "Nếu payment đang Succeeded mà nhận webhook Failed trong baseline, xử lý hợp lý là gì?",
+      "options": [
+        "Cho chuyển ngược sang Failed không điều kiện",
+        "Throw/BadRequest vì transition không hợp lệ",
+        "Xóa payment",
+        "Tạo order mới"
+      ],
+      "answerIndex": 1,
+      "explanation": "Baseline không cho Succeeded chuyển ngược Failed."
+    },
+    {
+      "id": "cp4-l2-026",
+      "level": "L2 - Applied",
+      "tag": "Webhook",
+      "question": "Webhook khác RabbitMQ/Kafka thế nào?",
+      "options": [
+        "Webhook là HTTP callback; RabbitMQ/Kafka là messaging infrastructure",
+        "Webhook luôn dùng TCP binary, RabbitMQ là HTTP",
+        "Kafka chỉ dành cho frontend",
+        "Không có khác biệt"
+      ],
+      "answerIndex": 0,
+      "explanation": "Webhook vẫn là HTTP endpoint public/secured; RabbitMQ/Kafka là broker/event streaming."
+    },
+    {
+      "id": "cp4-l2-027",
+      "level": "L2 - Applied",
+      "tag": "Idempotency",
+      "question": "Vì sao webhook production cần idempotency?",
+      "options": [
+        "Provider có thể retry cùng webhook nhiều lần",
+        "Webhook không có body",
+        "JWT không hỗ trợ role",
+        "Database không thể transaction"
+      ],
+      "answerIndex": 0,
+      "explanation": "Duplicate webhook có thể gây xử lý trùng nếu không idempotent."
+    },
+    {
+      "id": "cp4-l2-028",
+      "level": "L2 - Applied",
+      "tag": "Consistency",
+      "question": "Payment succeeded nhưng Order chưa cập nhật là vấn đề gì?",
+      "options": [
+        "Distributed consistency problem",
+        "CSS layout problem",
+        "JWT decode problem",
+        "Dapper mapping problem"
+      ],
+      "answerIndex": 0,
+      "explanation": "Hai service có state lệch nhau."
+    },
+    {
+      "id": "cp4-l2-029",
+      "level": "L2 - Applied",
+      "tag": "Event-driven",
+      "question": "Cách xử lý tương lai cho PaymentSucceeded hợp lý là gì?",
+      "options": [
+        "Publish PaymentSucceeded event, OrderingService consume và update order, dùng Outbox/Idempotent Consumer khi cần",
+        "Gộp PaymentService vào OrderingService luôn",
+        "Bỏ order status",
+        "Dùng localStorage sync"
+      ],
+      "answerIndex": 0,
+      "explanation": "Event-driven flow + reliability patterns giúp đồng bộ trạng thái giữa service."
+    },
+    {
+      "id": "cp4-l2-030",
+      "level": "L2 - Applied",
+      "tag": "ADR",
+      "question": "ADR 0004 trong checkpoint nên ghi quyết định gì?",
+      "options": [
+        "Boundary giữa Ordering, Discount, Payment, Basket",
+        "Mật khẩu production",
+        "UI favicon",
+        "Port máy cá nhân"
+      ],
+      "answerIndex": 0,
+      "explanation": "ADR ghi decision về service boundaries và consequences."
+    },
+    {
+      "id": "cp4-l2-031",
+      "level": "L2 - Applied",
+      "tag": "Demo",
+      "question": "Demo script checkpoint 4 nên chứng minh điều gì?",
+      "options": [
+        "Login/apply discount/checkout/create payment/webhook success và giải thích risk",
+        "Chỉ show folder structure",
+        "Chỉ mở Notion",
+        "Chỉ chạy dotnet --version"
+      ],
+      "answerIndex": 0,
+      "explanation": "Portfolio demo phải có flow chạy và câu chuyện kiến trúc/risk."
+    },
+    {
+      "id": "cp4-l2-032",
+      "level": "L2 - Applied",
+      "tag": "Scope Control",
+      "question": "Việc nào KHÔNG nên làm trong Checkpoint 4?",
+      "options": [
+        "Chạy regression test",
+        "Thêm RabbitMQ code trước bài 19",
+        "Viết ADR boundary",
+        "Ghi production risk"
+      ],
+      "answerIndex": 1,
+      "explanation": "RabbitMQ là bài 19, checkpoint không mở thêm scope."
+    },
+    {
+      "id": "cp4-l2-033",
+      "level": "L2 - Applied",
+      "tag": "Known Gaps",
+      "question": "Known gap nào được chấp nhận sau Checkpoint 4?",
+      "options": [
+        "Chưa có Outbox/Saga/Idempotency production",
+        "Không có PaymentService",
+        "Không có DiscountService",
+        "Không test API nào"
+      ],
+      "answerIndex": 0,
+      "explanation": "Outbox/Saga/idempotency production thuộc phase sau."
+    },
+    {
+      "id": "cp4-l2-034",
+      "level": "L2 - Applied",
+      "tag": "Inventory",
+      "question": "InventoryService trong lộ trình core hiện tại nên được hiểu thế nào?",
+      "options": [
+        "Bắt buộc thêm ngay trong Checkpoint 4",
+        "Chưa là service chính thức core; nên để extension/saga phase sau",
+        "Nằm trong DiscountService",
+        "Thay thế PaymentService"
+      ],
+      "answerIndex": 1,
+      "explanation": "Inventory rất đáng giá cho saga/stock reservation nhưng không nhồi vào checkpoint 4."
+    },
+    {
+      "id": "cp4-l2-035",
+      "level": "L2 - Applied",
+      "tag": "Shipping",
+      "question": "ShippingService nên được đặt ở đâu trong định hướng project?",
+      "options": [
+        "Optional extension sau payment success/shipment lifecycle",
+        "Bắt buộc trước RabbitMQ",
+        "Nằm trong IdentityService",
+        "Không thể làm microservice"
+      ],
+      "answerIndex": 0,
+      "explanation": "Shipping phù hợp optional extension cuối khóa hoặc sau core payment/order flow."
+    },
+    {
+      "id": "cp4-l3-036",
+      "level": "L3 - Advanced",
+      "tag": "Trade-off",
+      "question": "Vì sao không tích hợp full PaymentService vào CheckoutHandler ngay ở Buổi 18/Checkpoint 4?",
+      "options": [
+        "Vì PaymentService không cần thiết",
+        "Vì sẽ nhồi quá nhiều distributed consistency/reliability vào foundation phase, làm loãng scope",
+        "Vì REST không gọi được service khác",
+        "Vì Webhook không cần order"
+      ],
+      "answerIndex": 1,
+      "explanation": "Bài 18 chỉ baseline payment/webhook, integration production để các phase reliability/saga sau."
+    },
+    {
+      "id": "cp4-l3-037",
+      "level": "L3 - Advanced",
+      "tag": "Trade-off",
+      "question": "Nếu DiscountService tính finalAmount lúc checkout, Order nên lưu gì để tránh lệch về sau?",
+      "options": [
+        "Chỉ lưu couponCode, không lưu amount",
+        "Lưu snapshot discountAmount/finalAmount/rule info cần audit tại thời điểm checkout",
+        "Không lưu gì, mỗi lần xem order gọi DiscountService lại",
+        "Lưu password user"
+      ],
+      "answerIndex": 1,
+      "explanation": "Order nên lưu price/discount snapshot để audit và tránh rule thay đổi làm lệch order cũ."
+    },
+    {
+      "id": "cp4-l3-038",
+      "level": "L3 - Advanced",
+      "tag": "Consistency",
+      "question": "Vì sao không thể dùng một local DB transaction để đảm bảo PaymentService và OrderingService luôn nhất quán?",
+      "options": [
+        "Vì chúng là service/database boundary khác nhau; local transaction chỉ bảo vệ một database/process",
+        "Vì .NET không có transaction",
+        "Vì HTTP không có response",
+        "Vì JSON không thể serialize"
+      ],
+      "answerIndex": 0,
+      "explanation": "Microservices thường có database per service, cần eventual consistency/Saga/Outbox."
+    },
+    {
+      "id": "cp4-l3-039",
+      "level": "L3 - Advanced",
+      "tag": "Outbox",
+      "question": "Outbox sau này giải quyết vấn đề nào liên quan PaymentSucceeded?",
+      "options": [
+        "DB update thành công nhưng publish event fail",
+        "CSS cache cũ",
+        "JWT thiếu role",
+        "Dapper không query được"
+      ],
+      "answerIndex": 0,
+      "explanation": "Transactional Outbox lưu event cùng DB transaction để publish sau an toàn."
+    },
+    {
+      "id": "cp4-l3-040",
+      "level": "L3 - Advanced",
+      "tag": "Inbox/WebhookLog",
+      "question": "WebhookLog/Inbox pattern sau này giúp gì?",
+      "options": [
+        "Detect duplicate webhook/event và xử lý idempotent",
+        "Tăng font size UI",
+        "Validate password",
+        "Tạo SQL index tự động"
+      ],
+      "answerIndex": 0,
+      "explanation": "Lưu event/webhook id đã xử lý giúp chống duplicate."
+    },
+    {
+      "id": "cp4-l3-041",
+      "level": "L3 - Advanced",
+      "tag": "Saga",
+      "question": "Saga sẽ phù hợp khi nào trong MicroShop?",
+      "options": [
+        "Khi cần điều phối workflow nhiều bước như Order → Inventory reserve → Payment → Confirm/Release stock",
+        "Khi chỉ GET /products",
+        "Khi đổi dark mode",
+        "Khi validate price âm"
+      ],
+      "answerIndex": 0,
+      "explanation": "Saga quản lý transaction phân tán và compensation giữa nhiều service."
+    },
+    {
+      "id": "cp4-l3-042",
+      "level": "L3 - Advanced",
+      "tag": "Resilience",
+      "question": "Retry khi gọi BasketService nên cẩn thận điều gì?",
+      "options": [
+        "Retry mù quáng có thể tạo duplicate side effect nếu operation không idempotent",
+        "Retry luôn an toàn với mọi POST",
+        "Retry thay thế authentication",
+        "Retry không cần timeout"
+      ],
+      "answerIndex": 0,
+      "explanation": "Retry phải đi với timeout/backoff/idempotency tùy operation."
+    },
+    {
+      "id": "cp4-l3-043",
+      "level": "L3 - Advanced",
+      "tag": "Idempotency",
+      "question": "Idempotency key trong checkout sẽ giúp gì?",
+      "options": [
+        "Cùng một checkout request retry không tạo nhiều order trùng",
+        "Tự động giảm giá",
+        "Tự động cấp JWT",
+        "Bắt buộc dùng Kafka"
+      ],
+      "answerIndex": 0,
+      "explanation": "Idempotency key giúp nhận diện request lặp để trả kết quả cũ/thực hiện một lần."
+    },
+    {
+      "id": "cp4-l3-044",
+      "level": "L3 - Advanced",
+      "tag": "Event Design",
+      "question": "Event name nào hợp lý hơn để OrderingService cập nhật trạng thái sau payment?",
+      "options": [
+        "PaymentSucceeded",
+        "ProductNameChanged",
+        "UserLoggedInOnly",
+        "BasketViewed"
+      ],
+      "answerIndex": 0,
+      "explanation": "PaymentSucceeded diễn tả sự kiện nghiệp vụ mà OrderingService có thể consume."
+    },
+    {
+      "id": "cp4-l3-045",
+      "level": "L3 - Advanced",
+      "tag": "Security",
+      "question": "Webhook production cần security gì ngoài endpoint public?",
+      "options": [
+        "Signature verification/secret, timestamp, replay protection, rate limit/logging",
+        "Chỉ cần đặt tên route dài",
+        "Không cần gì vì provider gọi",
+        "Chỉ cần CSS"
+      ],
+      "answerIndex": 0,
+      "explanation": "Webhook public cần xác minh nguồn và chống replay/abuse."
+    },
+    {
+      "id": "cp4-l3-046",
+      "level": "L3 - Advanced",
+      "tag": "Error Reasoning",
+      "question": "Webhook SUCCEEDED trả 404 Not Found. Nguyên nhân hợp lý nhất là gì?",
+      "options": [
+        "paymentId không tồn tại trong repository",
+        "ProviderTransactionId quá dài nên luôn 404",
+        "Status SUCCEEDED không hỗ trợ",
+        "Currency là VND"
+      ],
+      "answerIndex": 0,
+      "explanation": "404 ở webhook baseline thường do không tìm thấy payment."
+    },
+    {
+      "id": "cp4-l3-047",
+      "level": "L3 - Advanced",
+      "tag": "Error Reasoning",
+      "question": "Webhook FAILED trên payment đã Succeeded trả 400. Cách giải thích đúng là gì?",
+      "options": [
+        "Authentication fail",
+        "Transition không hợp lệ theo domain rule baseline",
+        "Payment không tồn tại",
+        "Endpoint không có JSON"
+      ],
+      "answerIndex": 1,
+      "explanation": "Domain không cho chuyển Succeeded ngược Failed trong baseline."
+    },
+    {
+      "id": "cp4-l3-048",
+      "level": "L3 - Advanced",
+      "tag": "Portfolio",
+      "question": "Câu nào show profile tốt nhất sau Checkpoint 4?",
+      "options": [
+        "Tôi đã học payment",
+        "Tôi build được core flow order/checkout/discount/payment webhook baseline, tách boundary rõ và nhận diện risk consistency/idempotency/outbox/saga cho phase sau",
+        "Tôi gọi được một endpoint",
+        "Tôi có nhiều file JSON"
+      ],
+      "answerIndex": 1,
+      "explanation": "Câu này có flow, architecture boundary và production awareness."
+    },
+    {
+      "id": "cp4-l3-049",
+      "level": "L3 - Advanced",
+      "tag": "System Design",
+      "question": "Khi nào nên ưu tiên async event thay vì REST sync trong MicroShop?",
+      "options": [
+        "Khi task không cần user chờ ngay và service khác có thể xử lý sau, ví dụ notification/update read model",
+        "Mọi request GET products",
+        "Login username/password",
+        "Validate request body"
+      ],
+      "answerIndex": 0,
+      "explanation": "Async event phù hợp side effects, eventual consistency, decoupling."
+    },
+    {
+      "id": "cp4-l3-050",
+      "level": "L3 - Advanced",
+      "tag": "Scope Control",
+      "question": "Điều gì chứng tỏ pass Checkpoint 4 theo hướng nâng level thật?",
+      "options": [
+        "Có thể demo flow, test Postman, giải thích boundary/risk và biết phase sau xử lý risk bằng RabbitMQ/Reliability",
+        "Chỉ đọc hết file MD",
+        "Chỉ tạo thêm một service rỗng",
+        "Chỉ push code không chạy"
+      ],
+      "answerIndex": 0,
+      "explanation": "Checkpoint cần biến kiến thức thành khả năng demo, debug và defend trong phỏng vấn."
+    }
+  ]
+}

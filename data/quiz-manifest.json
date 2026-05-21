@@ -1,8 +1,14 @@
 [
   {
+    "id": "checkpoint-3",
+    "title": "Checkpoint 3 - Clean + Validation + JWT + Role/Claim",
+    "description": "50 câu nhiều level cho Checkpoint 3.",
+    "file": "./data/quizzes/checkpoint-3-quiz-50-levels.json"
+  },
+  {
     "id": "checkpoint-4",
     "title": "Checkpoint 4 - Ordering + Checkout + Discount + Payment/Webhook",
-    "description": "Review Phase 1.4 trước khi sang RabbitMQ + Reliability.",
-    "file": "./data/quizzes/checkpoint-4.json"
+    "description": "50 câu nhiều level cho Checkpoint 4.",
+    "file": "./data/quizzes/checkpoint-4-quiz-50-levels.json"
   }
 ]
