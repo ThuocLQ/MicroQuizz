@@ -10,5 +10,17 @@
     "title": "Checkpoint 4 - Ordering + Checkout + Discount + Payment/Webhook",
     "description": "50 câu nhiều level cho Checkpoint 4.",
     "file": "./data/quizzes/checkpoint-4-quiz-50-levels.json"
+  },
+  {
+    "id": "lesson-19-rabbitmq-masstransit-hard",
+    "title": "Buổi 19 - RabbitMQ + MassTransit",
+    "description": "30 câu hard mode về RabbitMQ, MassTransit, exchange/queue/binding và production risk.",
+    "file": "./data/quizzes/lesson-19-rabbitmq-masstransit-quiz-hard.json"
+  },
+  {
+    "id": "lesson-20-buildingblocks-contracts-event-design-hard",
+    "title": "Buổi 20 - BuildingBlocks.Contracts + Event Design",
+    "description": "30 câu hard mode về shared contracts, event design, versioning, coupling và consumer.",
+    "file": "./data/quizzes/lesson-20-buildingblocks-contracts-event-design-quiz-hard.json"
   }
 ]
