@@ -1,0 +1,443 @@
+{
+  "lesson": 19,
+  "title": "Buổi 19 - RabbitMQ + MassTransit",
+  "description": "Quiz hard mode: đáp án gây nhiễu khó phân biệt, tập trung phân biệt RabbitMQ, MassTransit, exchange/queue/binding, publish event và production risk.",
+  "version": "2.0-hard",
+  "questionCount": 30,
+  "levels": [
+    {
+      "id": "L1 - Foundation",
+      "description": "Khái niệm cơ bản nhưng đáp án nhiễu sát nghĩa."
+    },
+    {
+      "id": "L2 - Applied",
+      "description": "Áp dụng vào code/config/RabbitMQ UI."
+    },
+    {
+      "id": "L3 - Advanced",
+      "description": "Trade-off, production risk, troubleshooting."
+    }
+  ],
+  "questions": [
+    {
+      "id": "l19-hard-001",
+      "level": "L1 - Foundation",
+      "tag": "Roadmap",
+      "question": "Nhận định nào mô tả đúng nhất scope của Buổi 19?",
+      "options": [
+        "Thiết kế shared event contract chuẩn để nhiều service cùng consume mà không phụ thuộc nhau.",
+        "Mở bước đầu event-driven bằng RabbitMQ + MassTransit và publish event đầu tiên từ OrderingService.",
+        "Tạo worker service đầu tiên để consume OrderCreatedIntegrationEvent và xử lý notification.",
+        "Đảm bảo event không mất bằng Outbox và background publisher."
+      ],
+      "answerIndex": 1,
+      "explanation": "Buổi 19 chỉ mở publish event đầu tiên bằng RabbitMQ + MassTransit. Shared contract là Buổi 20, worker là Buổi 21, Outbox là Buổi 23."
+    },
+    {
+      "id": "l19-hard-002",
+      "level": "L1 - Foundation",
+      "tag": "RabbitMQ vs MassTransit",
+      "question": "Phân biệt nào đúng nhất giữa RabbitMQ và MassTransit?",
+      "options": [
+        "RabbitMQ là broker chạy bên ngoài app; MassTransit là framework .NET giúp app publish/consume qua broker.",
+        "RabbitMQ là thư viện NuGet trong .NET; MassTransit là server message broker chạy bằng Docker.",
+        "RabbitMQ chỉ tạo exchange; MassTransit chỉ tạo queue, không liên quan publish/consume.",
+        "RabbitMQ và MassTransit đều là database queue, khác nhau chủ yếu ở port."
+      ],
+      "answerIndex": 0,
+      "explanation": "RabbitMQ là message broker. MassTransit là framework client-side trong .NET, giúp làm việc với RabbitMQ dễ hơn."
+    },
+    {
+      "id": "l19-hard-003",
+      "level": "L1 - Foundation",
+      "tag": "Event Semantics",
+      "question": "Vì sao `OrderCreatedEvent` đúng hơn `CreateOrderEvent` trong bài này?",
+      "options": [
+        "`OrderCreatedEvent` là tên ngắn hơn nên MassTransit route nhanh hơn.",
+        "`CreateOrderEvent` chỉ dùng được với RabbitMQ.Client, không dùng được với MassTransit.",
+        "`OrderCreatedEvent` diễn tả một sự kiện đã xảy ra; `CreateOrderEvent` giống một command yêu cầu tạo order.",
+        "`CreateOrderEvent` không serialize được vì có động từ ở đầu."
+      ],
+      "answerIndex": 2,
+      "explanation": "Event nên nói về quá khứ: chuyện đã xảy ra. Command mới là mệnh lệnh cần thực thi."
+    },
+    {
+      "id": "l19-hard-004",
+      "level": "L1 - Foundation",
+      "tag": "REST vs Event",
+      "question": "Câu nào phân biệt REST synchronous và event asynchronous chính xác nhất?",
+      "options": [
+        "REST dùng cho internal service, event chỉ dùng cho public API.",
+        "REST thường yêu cầu caller chờ response; event thường là publish thông báo để consumer xử lý sau.",
+        "REST đảm bảo eventual consistency; event đảm bảo strong consistency.",
+        "REST dùng exchange; event dùng controller."
+      ],
+      "answerIndex": 1,
+      "explanation": "REST sync thường là request/response. Event async là publish sự kiện và consumer xử lý sau."
+    },
+    {
+      "id": "l19-hard-005",
+      "level": "L1 - Foundation",
+      "tag": "Port",
+      "question": "Trong docker-compose RabbitMQ của bài 19, cặp port nào đúng nhất?",
+      "options": [
+        "5672 cho Management UI, 15672 cho AMQP connection.",
+        "15672 cho Management UI, 5672 cho AMQP connection.",
+        "5004 cho Management UI, 5672 cho OrderingService.",
+        "9092 cho AMQP connection, 15672 cho RabbitMQ clustering."
+      ],
+      "answerIndex": 1,
+      "explanation": "5672 là AMQP port cho app kết nối, 15672 là RabbitMQ Management UI."
+    },
+    {
+      "id": "l19-hard-006",
+      "level": "L1 - Foundation",
+      "tag": "MassTransit",
+      "question": "Trong bài 19, `IPublishEndpoint` được dùng để làm gì?",
+      "options": [
+        "Nhận HTTP request từ Postman và map sang command.",
+        "Publish message/event qua MassTransit tới transport đã cấu hình.",
+        "Tạo queue test thủ công trong RabbitMQ Management UI.",
+        "Validate JWT trước khi tạo order."
+      ],
+      "answerIndex": 1,
+      "explanation": "`IPublishEndpoint.Publish(...)` là API MassTransit dùng để publish message/event."
+    },
+    {
+      "id": "l19-hard-007",
+      "level": "L1 - Foundation",
+      "tag": "Scope",
+      "question": "Điều nào KHÔNG thuộc mục tiêu pass Buổi 19?",
+      "options": [
+        "RabbitMQ chạy được bằng Docker Compose.",
+        "OrderingService publish được OrderCreatedEvent bằng MassTransit.",
+        "Postman tạo order và không lỗi khi publish event.",
+        "NotificationWorker consume event và gửi notification thật."
+      ],
+      "answerIndex": 3,
+      "explanation": "NotificationWorker thuộc Buổi 21. Buổi 19 chưa làm consumer."
+    },
+    {
+      "id": "l19-hard-008",
+      "level": "L1 - Foundation",
+      "tag": "Message Flow",
+      "question": "Flow đúng nhất sau Buổi 19 là gì?",
+      "options": [
+        "Postman → OrderingService → DB → MassTransit → RabbitMQ.",
+        "Postman → RabbitMQ → OrderingService → DB.",
+        "OrderingService → NotificationWorker → RabbitMQ → DB.",
+        "RabbitMQ → MassTransit → Postman → OrderingService."
+      ],
+      "answerIndex": 0,
+      "explanation": "Request tạo order đi vào OrderingService, lưu DB, rồi publish event qua MassTransit tới RabbitMQ."
+    },
+    {
+      "id": "l19-hard-009",
+      "level": "L1 - Foundation",
+      "tag": "Event Data",
+      "question": "Field nào nên có trong OrderCreatedEvent để chuẩn bị cho idempotency/tracing sau này?",
+      "options": [
+        "EventId",
+        "QueueName",
+        "DockerContainerId",
+        "SwaggerUrl"
+      ],
+      "answerIndex": 0,
+      "explanation": "EventId giúp nhận diện event duy nhất, hữu ích cho tracing và idempotency."
+    },
+    {
+      "id": "l19-hard-010",
+      "level": "L1 - Foundation",
+      "tag": "Timing",
+      "question": "OrderCreatedEvent nên được publish ở thời điểm nào trong handler?",
+      "options": [
+        "Trước khi tạo order để consumer tự quyết định có tạo order không.",
+        "Ngay khi nhận HTTP request, trước khi validate body.",
+        "Sau khi order được tạo/lưu thành công.",
+        "Khi service startup để RabbitMQ tạo exchange."
+      ],
+      "answerIndex": 2,
+      "explanation": "OrderCreated là event 'đã xảy ra', nên publish sau khi order thật sự được tạo/lưu thành công."
+    },
+    {
+      "id": "l19-hard-011",
+      "level": "L2 - Applied",
+      "tag": "Config",
+      "question": "OrderingService chạy trên máy local, RabbitMQ chạy Docker và expose `5672:5672`. `RabbitMq:Host` nên là gì?",
+      "options": [
+        "rabbitmq",
+        "localhost",
+        "microshop-rabbitmq",
+        "0.0.0.0"
+      ],
+      "answerIndex": 1,
+      "explanation": "App chạy ngoài Docker trên host machine thì kết nối RabbitMQ qua localhost:5672."
+    },
+    {
+      "id": "l19-hard-012",
+      "level": "L2 - Applied",
+      "tag": "Config",
+      "question": "OrderingService và RabbitMQ cùng chạy trong Docker Compose network. `RabbitMq:Host` nên ưu tiên là gì?",
+      "options": [
+        "localhost vì container luôn nhìn thấy nhau qua localhost.",
+        "rabbitmq nếu service trong compose tên là rabbitmq.",
+        "15672 vì service nội bộ dùng Management UI port.",
+        "host.docker.internal là lựa chọn duy nhất."
+      ],
+      "answerIndex": 1,
+      "explanation": "Trong Docker Compose network, các container gọi nhau qua service name, ví dụ `rabbitmq`."
+    },
+    {
+      "id": "l19-hard-013",
+      "level": "L2 - Applied",
+      "tag": "RabbitMQ UI",
+      "question": "Sau khi publish bằng MassTransit nhưng chưa tạo consumer, vì sao queue test có thể không có message?",
+      "options": [
+        "Vì MassTransit chỉ tạo HTTP request, không tạo RabbitMQ message.",
+        "Vì message publish vào exchange; queue chỉ nhận nếu có binding phù hợp.",
+        "Vì RabbitMQ không lưu message nếu publisher là .NET.",
+        "Vì OrderCreatedEvent thiếu Currency nên bị RabbitMQ drop."
+      ],
+      "answerIndex": 1,
+      "explanation": "RabbitMQ route message từ exchange tới queue qua binding. Không có binding phù hợp thì queue không nhận."
+    },
+    {
+      "id": "l19-hard-014",
+      "level": "L2 - Applied",
+      "tag": "Exchange/Queue",
+      "question": "Mô tả nào đúng nhất về exchange và queue trong RabbitMQ?",
+      "options": [
+        "Exchange giữ message để consumer đọc; queue chỉ định tuyến message.",
+        "Exchange nhận và route message; queue giữ message để consumer đọc.",
+        "Exchange là database; queue là API endpoint.",
+        "Exchange chỉ dùng cho Kafka; queue chỉ dùng cho RabbitMQ."
+      ],
+      "answerIndex": 1,
+      "explanation": "Exchange định tuyến message tới queue. Queue giữ message cho consumer."
+    },
+    {
+      "id": "l19-hard-015",
+      "level": "L2 - Applied",
+      "tag": "MassTransit Convention",
+      "question": "Vì sao exchange trong RabbitMQ UI có thể có tên khá dài chứa namespace/type của event?",
+      "options": [
+        "MassTransit thường dùng message type convention để tạo topology/exchange.",
+        "RabbitMQ tự decode JWT và đặt tên exchange theo claim role.",
+        "Docker Compose tự thêm namespace project vào mọi queue.",
+        "Postman đặt tên exchange theo collection."
+      ],
+      "answerIndex": 0,
+      "explanation": "MassTransit có convention tạo topology dựa trên message type/namespace."
+    },
+    {
+      "id": "l19-hard-016",
+      "level": "L2 - Applied",
+      "tag": "Code",
+      "question": "Trong `CreateOrderHandler`, thay đổi tối thiểu để publish event bằng MassTransit là gì?",
+      "options": [
+        "Inject IPublishEndpoint, tạo OrderCreatedEvent sau khi save order, gọi Publish.",
+        "Inject RabbitMqOptions và tự tạo ConnectionFactory trong handler.",
+        "Inject IConfiguration rồi gọi RabbitMQ Management API.",
+        "Inject HttpClient và POST sang RabbitMQ UI."
+      ],
+      "answerIndex": 0,
+      "explanation": "Bài 19 dùng MassTransit nên handler inject `IPublishEndpoint` và gọi `Publish`."
+    },
+    {
+      "id": "l19-hard-017",
+      "level": "L2 - Applied",
+      "tag": "Postman",
+      "question": "Postman test nào chứng minh bài 19 chạy đúng nhất?",
+      "options": [
+        "POST /orders thành công và RabbitMQ UI thấy exchange/message liên quan OrderCreatedEvent.",
+        "GET /products trả 200 và Swagger mở được.",
+        "POST /discounts/apply trả finalAmount đúng.",
+        "GET /auth/me trả role Admin."
+      ],
+      "answerIndex": 0,
+      "explanation": "Bài 19 tập trung vào create order và publish event sang RabbitMQ."
+    },
+    {
+      "id": "l19-hard-018",
+      "level": "L2 - Applied",
+      "tag": "Package",
+      "question": "Package nào cần thiết cho bài 19 với RabbitMQ transport?",
+      "options": [
+        "MassTransit và MassTransit.RabbitMQ",
+        "RabbitMQ.Client và Dapper.Contrib",
+        "Microsoft.AspNetCore.Authentication.JwtBearer và Ocelot",
+        "Marten và MongoDB.Driver"
+      ],
+      "answerIndex": 0,
+      "explanation": "Bài 19 dùng MassTransit + RabbitMQ transport."
+    },
+    {
+      "id": "l19-hard-019",
+      "level": "L2 - Applied",
+      "tag": "AddMassTransit",
+      "question": "Trong `Program.cs`, `UsingRabbitMq` chủ yếu dùng để làm gì?",
+      "options": [
+        "Cấu hình MassTransit dùng RabbitMQ transport và thông tin host/user/pass.",
+        "Tự động tạo Order domain model.",
+        "Cấu hình HTTP route `/orders`.",
+        "Tạo Postman environment."
+      ],
+      "answerIndex": 0,
+      "explanation": "`UsingRabbitMq` cấu hình transport RabbitMQ cho MassTransit."
+    },
+    {
+      "id": "l19-hard-020",
+      "level": "L2 - Applied",
+      "tag": "Envelope",
+      "question": "Message xem trong RabbitMQ UI có thể bị wrap thêm metadata. Nên kiểm tra gì?",
+      "options": [
+        "Chỉ kiểm tra CSS class trong payload.",
+        "Tìm phần message/event data có EventId, OrderId, CustomerId, TotalAmount.",
+        "Chỉ kiểm tra container name.",
+        "Bỏ qua payload vì MassTransit không serialize data."
+      ],
+      "answerIndex": 1,
+      "explanation": "MassTransit có thể thêm envelope/headers. Quan trọng là event data chính có đúng thông tin."
+    },
+    {
+      "id": "l19-hard-021",
+      "level": "L3 - Advanced",
+      "tag": "Outbox",
+      "question": "Save order thành công nhưng publish event fail dẫn đến trạng thái nào?",
+      "options": [
+        "Order tồn tại trong DB nhưng hệ async phía sau không biết order đã tạo.",
+        "RabbitMQ tự rollback database order.",
+        "MassTransit tự tạo order mới ở consumer.",
+        "Postman tự retry đến khi event được publish."
+      ],
+      "answerIndex": 0,
+      "explanation": "Đây là reliability gap giữa DB transaction và broker publish. Outbox sẽ xử lý sau."
+    },
+    {
+      "id": "l19-hard-022",
+      "level": "L3 - Advanced",
+      "tag": "Design Tradeoff",
+      "question": "Vì sao bài 19 vẫn chấp nhận publish trực tiếp sau khi save DB dù biết có rủi ro?",
+      "options": [
+        "Vì publish trực tiếp là production-safe tuyệt đối.",
+        "Vì mục tiêu bài này là học publish event đầu tiên; Outbox được tách sang bài sau để tránh quá tải.",
+        "Vì RabbitMQ đảm bảo rollback database nếu publish fail.",
+        "Vì consumer chưa có nên không có rủi ro."
+      ],
+      "answerIndex": 1,
+      "explanation": "Lộ trình chia nhỏ: bài 19 publish event, bài 23 Outbox. Không nhồi reliability vào bài đầu."
+    },
+    {
+      "id": "l19-hard-023",
+      "level": "L3 - Advanced",
+      "tag": "Side Effects",
+      "question": "Lý do tốt nhất để không gọi NotificationService trực tiếp trong CreateOrderHandler là gì?",
+      "options": [
+        "Notification là side effect có thể async; gọi trực tiếp làm OrderingService phụ thuộc availability/latency của NotificationService.",
+        "HTTP không thể gọi từ handler trong Clean Architecture.",
+        "NotificationService bắt buộc phải là consumer vì MassTransit không hỗ trợ REST.",
+        "Vì email luôn phải gửi trước khi order được lưu."
+      ],
+      "answerIndex": 0,
+      "explanation": "Notification sau order created là side effect phù hợp xử lý async để giảm coupling."
+    },
+    {
+      "id": "l19-hard-024",
+      "level": "L3 - Advanced",
+      "tag": "Topology",
+      "question": "Nếu tạo queue test sau khi đã publish message đầu tiên, message đầu tiên có chắc nằm trong queue test không?",
+      "options": [
+        "Chắc chắn có, RabbitMQ tự replay mọi message cũ cho queue mới.",
+        "Không chắc; queue chỉ nhận message sau khi có binding phù hợp tại thời điểm routing.",
+        "Chắc chắn không vì RabbitMQ không lưu message.",
+        "Có nếu Postman vẫn mở tab request."
+      ],
+      "answerIndex": 1,
+      "explanation": "Queue mới không tự nhận lại message đã route trước đó nếu không có cơ chế replay. RabbitMQ không phải event store."
+    },
+    {
+      "id": "l19-hard-025",
+      "level": "L3 - Advanced",
+      "tag": "Failure",
+      "question": "Nếu RabbitMQ down và handler publish trực tiếp bằng IPublishEndpoint, API tạo order có thể gặp vấn đề gì?",
+      "options": [
+        "Có thể fail sau khi save order, tùy code xử lý exception.",
+        "Luôn thành công vì MassTransit lưu message vào local browser cache.",
+        "RabbitMQ tự start lại container từ code .NET.",
+        "Order sẽ tự chuyển sang PendingPublish trong DB vì MassTransit mặc định có Outbox."
+      ],
+      "answerIndex": 0,
+      "explanation": "Publish trực tiếp phụ thuộc RabbitMQ availability. Nếu broker down, publish có thể throw và làm request fail."
+    },
+    {
+      "id": "l19-hard-026",
+      "level": "L3 - Advanced",
+      "tag": "Scope Control",
+      "question": "Cặp bài học nào được phân tách đúng theo roadmap?",
+      "options": [
+        "Buổi 19: publish event; Buổi 20: shared contract; Buổi 21: consumer worker.",
+        "Buổi 19: Outbox; Buổi 20: Saga; Buổi 21: Kafka.",
+        "Buổi 19: Clean Architecture; Buổi 20: JWT; Buổi 21: Role.",
+        "Buổi 19: Inventory; Buổi 20: Shipping; Buổi 21: Payment."
+      ],
+      "answerIndex": 0,
+      "explanation": "Đây là sequence đúng của Phase 1.5 trong roadmap hiện tại."
+    },
+    {
+      "id": "l19-hard-027",
+      "level": "L3 - Advanced",
+      "tag": "Troubleshooting",
+      "question": "POST /orders trả lỗi connection refused tới RabbitMQ. Nguyên nhân nào hợp lý nhất?",
+      "options": [
+        "RabbitMQ chưa chạy hoặc Host/Port config sai.",
+        "OrderCreatedEvent thiếu Version.",
+        "Postman thiếu biến product_id.",
+        "CatalogService chưa có ProductMapper."
+      ],
+      "answerIndex": 0,
+      "explanation": "Connection refused thường do RabbitMQ down, sai host/port, port chưa expose."
+    },
+    {
+      "id": "l19-hard-028",
+      "level": "L3 - Advanced",
+      "tag": "Security",
+      "question": "RabbitMQ Management UI login fail dù container chạy. Nên kiểm tra gì trước?",
+      "options": [
+        "User/password trong docker-compose và volume cũ có thể đang giữ credential cũ.",
+        "OrderCreatedEvent namespace.",
+        "Postman body field quantity.",
+        "MediatR handler return type."
+      ],
+      "answerIndex": 0,
+      "explanation": "RabbitMQ credentials đến từ env lúc init. Nếu volume cũ tồn tại, user/pass có thể không đổi theo compose mới."
+    },
+    {
+      "id": "l19-hard-029",
+      "level": "L3 - Advanced",
+      "tag": "Exactly Once",
+      "question": "Sau bài 19, hệ thống đã đạt exactly-once processing chưa?",
+      "options": [
+        "Rồi, vì MassTransit luôn đảm bảo exactly-once cho mọi broker.",
+        "Chưa; mới publish event baseline, chưa có idempotent consumer/outbox.",
+        "Rồi, vì EventId đã tồn tại trong payload.",
+        "Rồi, vì RabbitMQ Management UI thấy message."
+      ],
+      "answerIndex": 1,
+      "explanation": "EventId chỉ là nền tảng. Exactly-once thực tế rất khó; cần idempotency/outbox/inbox và thiết kế cẩn thận."
+    },
+    {
+      "id": "l19-hard-030",
+      "level": "L3 - Advanced",
+      "tag": "Interview",
+      "question": "Câu trả lời nào thể hiện hiểu sâu nhất về bài 19 khi phỏng vấn?",
+      "options": [
+        "Tôi dùng RabbitMQ vì microservices bắt buộc phải có queue.",
+        "Tôi dùng MassTransit để publish OrderCreatedEvent từ OrderingService, nhưng hiểu đây chưa production-safe vì còn rủi ro DB save xong publish fail nên sẽ cần Outbox ở phase sau.",
+        "Tôi dùng RabbitMQ để thay thế mọi REST API.",
+        "Tôi tạo queue test nên hệ thống đã full async production."
+      ],
+      "answerIndex": 1,
+      "explanation": "Câu này nêu đúng mục tiêu, công cụ, event và production risk."
+    }
+  ]
+}

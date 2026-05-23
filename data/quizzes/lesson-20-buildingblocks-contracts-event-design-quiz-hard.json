@@ -1,0 +1,443 @@
+{
+  "lesson": 20,
+  "title": "Buổi 20 - BuildingBlocks.Contracts + Event Design",
+  "description": "Quiz hard mode: đáp án gây nhiễu khó phân biệt, tập trung shared contracts, event design, versioning, coupling và chuẩn bị consumer.",
+  "version": "2.0-hard",
+  "questionCount": 30,
+  "levels": [
+    {
+      "id": "L1 - Foundation",
+      "description": "Khái niệm cơ bản nhưng đáp án nhiễu sát nghĩa."
+    },
+    {
+      "id": "L2 - Applied",
+      "description": "Áp dụng vào structure, reference, refactor và RabbitMQ UI."
+    },
+    {
+      "id": "L3 - Advanced",
+      "description": "Contract governance, versioning, compatibility, design trade-off."
+    }
+  ],
+  "questions": [
+    {
+      "id": "l20-hard-001",
+      "level": "L1 - Foundation",
+      "tag": "Roadmap",
+      "question": "Buổi 20 nằm ở đâu trong Phase 1.5?",
+      "options": [
+        "Sau publish event bằng MassTransit, trước khi tạo NotificationWorker consume event.",
+        "Trước RabbitMQ + MassTransit, để thiết kế contract trước khi có broker.",
+        "Sau Retry/DLQ, để gom lỗi vào shared project.",
+        "Sau Outbox, để consumer đọc outbox table."
+      ],
+      "answerIndex": 0,
+      "explanation": "Buổi 19 publish event. Buổi 20 chuẩn hóa contracts. Buổi 21 mới tạo worker consume."
+    },
+    {
+      "id": "l20-hard-002",
+      "level": "L1 - Foundation",
+      "tag": "Contracts",
+      "question": "Mô tả nào đúng nhất về `BuildingBlocks.Contracts`?",
+      "options": [
+        "Project chứa implementation RabbitMQ connection và MassTransit retry policy.",
+        "Project chứa contract dùng chung như integration events để publisher/consumer cùng reference.",
+        "Project chứa tất cả domain model của mọi service để tái sử dụng tối đa.",
+        "Project chứa endpoint HTTP dùng chung cho mọi service."
+      ],
+      "answerIndex": 1,
+      "explanation": "BuildingBlocks.Contracts chứa shared contracts như integration event, không chứa implementation hay toàn bộ domain logic."
+    },
+    {
+      "id": "l20-hard-003",
+      "level": "L1 - Foundation",
+      "tag": "Coupling",
+      "question": "Vì sao NotificationWorker không nên reference OrderingService chỉ để dùng `OrderCreatedEvent`?",
+      "options": [
+        "Vì worker không thể reference webapi project trong .NET.",
+        "Vì consumer sẽ bị coupling vào service publisher thay vì chỉ phụ thuộc shared contract.",
+        "Vì RabbitMQ không cho hai project dùng chung type.",
+        "Vì event sẽ không serialize nếu nằm trong OrderingService."
+      ],
+      "answerIndex": 1,
+      "explanation": "Worker chỉ cần biết contract, không nên phụ thuộc toàn bộ OrderingService."
+    },
+    {
+      "id": "l20-hard-004",
+      "level": "L1 - Foundation",
+      "tag": "Event Contract",
+      "question": "Event contract trả lời tốt nhất cho câu hỏi nào?",
+      "options": [
+        "Event tên gì, có field nào, ý nghĩa field là gì, version nào, consumer kỳ vọng gì.",
+        "Service chạy port nào, database nào, Docker image nào.",
+        "Controller map route nào và Swagger title là gì.",
+        "JWT issuer/audience là gì."
+      ],
+      "answerIndex": 0,
+      "explanation": "Event contract là thỏa thuận dữ liệu giữa publisher và consumer."
+    },
+    {
+      "id": "l20-hard-005",
+      "level": "L1 - Foundation",
+      "tag": "Integration vs Domain",
+      "question": "Phân biệt nào đúng nhất giữa Domain Event và Integration Event trong lộ trình này?",
+      "options": [
+        "Domain Event dùng giữa service; Integration Event chỉ dùng trong cùng aggregate.",
+        "Domain Event thường nội bộ bounded context; Integration Event là contract giao tiếp giữa services.",
+        "Domain Event bắt buộc đi qua RabbitMQ; Integration Event không được dùng broker.",
+        "Hai loại luôn giống nhau, chỉ khác hậu tố tên file."
+      ],
+      "answerIndex": 1,
+      "explanation": "Domain Event là nội bộ domain/service. Integration Event dùng để service khác biết."
+    },
+    {
+      "id": "l20-hard-006",
+      "level": "L1 - Foundation",
+      "tag": "Naming",
+      "question": "Tên nào đúng với convention của bài 20 nhất?",
+      "options": [
+        "CreateOrderIntegrationEvent",
+        "OrderCreatedIntegrationEvent",
+        "OrderCreateRequestEvent",
+        "SendOrderCreatedEmailEvent"
+      ],
+      "answerIndex": 1,
+      "explanation": "Integration event nên đặt theo việc đã xảy ra: OrderCreatedIntegrationEvent."
+    },
+    {
+      "id": "l20-hard-007",
+      "level": "L1 - Foundation",
+      "tag": "Base Event",
+      "question": "`IntegrationEvent` base contract nên chứa nhóm field nào?",
+      "options": [
+        "EventId, OccurredAtUtc, Version",
+        "OrderId, CustomerId, TotalAmount",
+        "Host, VirtualHost, UserName, Password",
+        "QueueName, ExchangeName, RoutingKey"
+      ],
+      "answerIndex": 0,
+      "explanation": "Base metadata gồm EventId, OccurredAtUtc, Version. Business data nằm ở event cụ thể."
+    },
+    {
+      "id": "l20-hard-008",
+      "level": "L1 - Foundation",
+      "tag": "Business Data",
+      "question": "Field nào thuộc business data của `OrderCreatedIntegrationEvent`, không phải base metadata?",
+      "options": [
+        "OccurredAtUtc",
+        "Version",
+        "OrderId",
+        "EventId"
+      ],
+      "answerIndex": 2,
+      "explanation": "OrderId là business data. EventId/OccurredAtUtc/Version là metadata chung."
+    },
+    {
+      "id": "l20-hard-009",
+      "level": "L1 - Foundation",
+      "tag": "Versioning",
+      "question": "Mục đích chính của field `Version` trong event là gì?",
+      "options": [
+        "Quản lý tiến hóa contract theo thời gian.",
+        "Đảm bảo message không bao giờ duplicate.",
+        "Chọn RabbitMQ port.",
+        "Thay thế EventId."
+      ],
+      "answerIndex": 0,
+      "explanation": "Version giúp quản lý thay đổi contract/event evolution."
+    },
+    {
+      "id": "l20-hard-010",
+      "level": "L1 - Foundation",
+      "tag": "Scope",
+      "question": "Điều nào KHÔNG thuộc scope Buổi 20?",
+      "options": [
+        "Tạo BuildingBlocks.Contracts.",
+        "Tạo OrderCreatedIntegrationEvent.",
+        "Refactor OrderingService publish shared contract.",
+        "Tạo NotificationWorker consume event."
+      ],
+      "answerIndex": 3,
+      "explanation": "NotificationWorker là Buổi 21."
+    },
+    {
+      "id": "l20-hard-011",
+      "level": "L2 - Applied",
+      "tag": "Structure",
+      "question": "Structure nào đúng nhất sau bài 20?",
+      "options": [
+        "BuildingBlocks/BuildingBlocks.Contracts/Events/Orders/OrderCreatedIntegrationEvent.cs",
+        "Services/OrderingService/Infrastructure/RabbitMq/OrderCreatedIntegrationEvent.cs",
+        "Services/NotificationWorker/API/Endpoints/OrderCreatedIntegrationEvent.cs",
+        "Services/CatalogService/Domain/Orders/OrderCreatedIntegrationEvent.cs"
+      ],
+      "answerIndex": 0,
+      "explanation": "Shared event contract nằm trong BuildingBlocks.Contracts."
+    },
+    {
+      "id": "l20-hard-012",
+      "level": "L2 - Applied",
+      "tag": "Reference",
+      "question": "Dependency đúng sau bài 20 là gì?",
+      "options": [
+        "BuildingBlocks.Contracts reference OrderingService để lấy Order domain.",
+        "OrderingService reference BuildingBlocks.Contracts để publish shared event.",
+        "NotificationWorker sau này reference OrderingService để consume event.",
+        "RabbitMQ reference BuildingBlocks.Contracts để validate message."
+      ],
+      "answerIndex": 1,
+      "explanation": "Publisher và consumer reference shared contract. Shared contract không phụ thuộc service cụ thể."
+    },
+    {
+      "id": "l20-hard-013",
+      "level": "L2 - Applied",
+      "tag": "Refactor",
+      "question": "Sau khi tạo `OrderCreatedIntegrationEvent`, xử lý event tạm `OrderCreatedEvent` trong OrderingService thế nào là hợp lý nhất?",
+      "options": [
+        "Giữ dùng song song để tăng compatibility.",
+        "Xóa hoặc ngưng dùng để tránh nhầm, chuyển publish sang shared contract mới.",
+        "Di chuyển vào RabbitMqOptions.",
+        "Đổi tên thành Domain Event và publish tiếp."
+      ],
+      "answerIndex": 1,
+      "explanation": "Nên dùng shared contract mới, tránh using nhầm event tạm."
+    },
+    {
+      "id": "l20-hard-014",
+      "level": "L2 - Applied",
+      "tag": "Command",
+      "question": "Lệnh nào phù hợp để add reference từ OrderingService sang BuildingBlocks.Contracts?",
+      "options": [
+        "dotnet add Services/OrderingService/OrderingService.csproj reference BuildingBlocks/BuildingBlocks.Contracts/BuildingBlocks.Contracts.csproj",
+        "dotnet sln reference Services/OrderingService BuildingBlocks.Contracts",
+        "docker compose add reference ordering contracts",
+        "dotnet add BuildingBlocks.Contracts package OrderingService"
+      ],
+      "answerIndex": 0,
+      "explanation": "Dùng `dotnet add <project> reference <referenced-project>`."
+    },
+    {
+      "id": "l20-hard-015",
+      "level": "L2 - Applied",
+      "tag": "Handler",
+      "question": "Trong CreateOrderHandler sau bài 20, using nào là trọng tâm để publish event chuẩn?",
+      "options": [
+        "using BuildingBlocks.Contracts.Events.Orders;",
+        "using OrderingService.Application.IntegrationEvents;",
+        "using RabbitMQ.Client;",
+        "using Microsoft.AspNetCore.Authorization;"
+      ],
+      "answerIndex": 0,
+      "explanation": "Event contract mới nằm trong namespace BuildingBlocks.Contracts.Events.Orders."
+    },
+    {
+      "id": "l20-hard-016",
+      "level": "L2 - Applied",
+      "tag": "RabbitMQ",
+      "question": "Sau khi đổi message type từ `OrderCreatedEvent` sang `OrderCreatedIntegrationEvent`, queue test cũ không nhận message. Nguyên nhân hợp lý nhất?",
+      "options": [
+        "MassTransit có thể tạo exchange theo message type mới, queue cũ đang bind exchange cũ.",
+        "RabbitMQ không hỗ trợ tên event dài.",
+        "BuildingBlocks.Contracts không thể serialize.",
+        "OrderCreatedIntegrationEvent thiếu constructor public."
+      ],
+      "answerIndex": 0,
+      "explanation": "Đổi contract/type có thể đổi exchange topology. Cần bind queue test vào exchange mới."
+    },
+    {
+      "id": "l20-hard-017",
+      "level": "L2 - Applied",
+      "tag": "Versioning",
+      "question": "Thay đổi nào thường backward-compatible hơn?",
+      "options": [
+        "Thêm field mới mà consumer cũ có thể bỏ qua.",
+        "Xóa field CustomerId đang được consumer dùng.",
+        "Đổi tên TotalAmount thành Amount.",
+        "Đổi kiểu TotalAmount từ decimal sang string."
+      ],
+      "answerIndex": 0,
+      "explanation": "Thêm field thường ít phá consumer cũ hơn. Xóa/đổi tên/đổi kiểu là breaking change."
+    },
+    {
+      "id": "l20-hard-018",
+      "level": "L2 - Applied",
+      "tag": "Event Size",
+      "question": "Vì sao không nên nhét toàn bộ OrderItems, PaymentInfo, InventoryInfo vào OrderCreatedIntegrationEvent ngay từ đầu?",
+      "options": [
+        "Vì event contract sẽ phình, tăng coupling và khó versioning.",
+        "Vì MassTransit không serialize được list object.",
+        "Vì RabbitMQ chỉ cho tối đa 4 field.",
+        "Vì IntegrationEvent không được chứa business data."
+      ],
+      "answerIndex": 0,
+      "explanation": "Event nên đủ dùng, không phình quá mức. Quá nhiều field làm contract khó quản trị và coupling mạnh."
+    },
+    {
+      "id": "l20-hard-019",
+      "level": "L2 - Applied",
+      "tag": "Build Error",
+      "question": "Lỗi `The type or namespace name 'BuildingBlocks' could not be found` thường do gì?",
+      "options": [
+        "Chưa add project reference hoặc using sai namespace.",
+        "RabbitMQ chưa có queue.",
+        "Postman chưa set admin_token.",
+        "Docker Desktop chưa login."
+      ],
+      "answerIndex": 0,
+      "explanation": "Compile error namespace thường do thiếu reference hoặc namespace không đúng."
+    },
+    {
+      "id": "l20-hard-020",
+      "level": "L2 - Applied",
+      "tag": "Pass Criteria",
+      "question": "Tiêu chí pass thực tế của bài 20 là gì?",
+      "options": [
+        "Tạo BuildingBlocks.Contracts, refactor OrderingService publish OrderCreatedIntegrationEvent, build/test pass.",
+        "Tạo worker consume event và gửi email thật.",
+        "Implement retry/DLQ/idempotency/outbox đầy đủ.",
+        "Tạo Schema Registry và contract testing pipeline."
+      ],
+      "answerIndex": 0,
+      "explanation": "Bài 20 tập trung shared contract và refactor publisher dùng contract mới."
+    },
+    {
+      "id": "l20-hard-021",
+      "level": "L3 - Advanced",
+      "tag": "Contract Governance",
+      "question": "Vì sao event contract cần được xem là 'public contract' giữa services?",
+      "options": [
+        "Vì consumer có thể phụ thuộc vào field/ý nghĩa của event; thay đổi tùy tiện có thể phá hệ khác.",
+        "Vì mọi class public trong C# đều tự động publish ra internet.",
+        "Vì RabbitMQ yêu cầu contract phải public record.",
+        "Vì Postman cần đọc contract trước khi gửi request."
+      ],
+      "answerIndex": 0,
+      "explanation": "Event contract là thỏa thuận giữa publisher/consumer, cần quản lý thay đổi cẩn thận."
+    },
+    {
+      "id": "l20-hard-022",
+      "level": "L3 - Advanced",
+      "tag": "Shared Kernel Risk",
+      "question": "Rủi ro nếu biến BuildingBlocks.Contracts thành nơi chứa mọi thứ là gì?",
+      "options": [
+        "Shared project phình to, coupling toàn hệ thống tăng, thay đổi nhỏ có thể ảnh hưởng nhiều service.",
+        "RabbitMQ sẽ không khởi động được.",
+        "MassTransit sẽ không publish được record.",
+        "Postman không load được environment."
+      ],
+      "answerIndex": 0,
+      "explanation": "Shared contracts nên tối thiểu và có kỷ luật, tránh thành shared kernel quá lớn."
+    },
+    {
+      "id": "l20-hard-023",
+      "level": "L3 - Advanced",
+      "tag": "Breaking Change",
+      "question": "Nếu muốn đổi `TotalAmount` thành `Amount`, cách an toàn hơn là gì?",
+      "options": [
+        "Đổi ngay và xóa TotalAmount vì tên mới đẹp hơn.",
+        "Thêm Amount, giữ TotalAmount một thời gian hoặc tạo version mới nếu đây là breaking change.",
+        "Không cần quan tâm vì consumer sẽ tự hiểu field mới.",
+        "Đổi sang string để dễ serialize."
+      ],
+      "answerIndex": 1,
+      "explanation": "Đổi tên field là breaking. Cần migration/versioning strategy."
+    },
+    {
+      "id": "l20-hard-024",
+      "level": "L3 - Advanced",
+      "tag": "Ownership",
+      "question": "Ai nên sở hữu định nghĩa `OrderCreatedIntegrationEvent`?",
+      "options": [
+        "Ordering domain/team với tư cách publisher của sự kiện nghiệp vụ, nhưng contract được đặt ở shared contracts để consumer dùng.",
+        "NotificationWorker vì nó là consumer đầu tiên.",
+        "RabbitMQ vì broker giữ message.",
+        "Postman vì nó test API."
+      ],
+      "answerIndex": 0,
+      "explanation": "Publisher/bounded context thường sở hữu event semantics, shared project chỉ là nơi phân phối contract."
+    },
+    {
+      "id": "l20-hard-025",
+      "level": "L3 - Advanced",
+      "tag": "Consumer Needs",
+      "question": "Consumer muốn thêm `CustomerEmail` để gửi mail. Cách suy nghĩ nào đúng nhất?",
+      "options": [
+        "Thêm ngay mọi field consumer yêu cầu để tránh consumer gọi API khác.",
+        "Cân nhắc contract ownership, privacy, coupling, backward compatibility; có thể thêm field nếu đó là data hợp lý của event.",
+        "Không bao giờ thêm field mới vào event.",
+        "Cho consumer reference trực tiếp OrderingService để lấy thêm data."
+      ],
+      "answerIndex": 1,
+      "explanation": "Thêm field cần cân nhắc kỹ. Event không nên quá nghèo cũng không nên quá béo."
+    },
+    {
+      "id": "l20-hard-026",
+      "level": "L3 - Advanced",
+      "tag": "Domain vs Integration",
+      "question": "Câu nào đúng nhất khi so sánh Domain Event và Integration Event?",
+      "options": [
+        "Domain Event có thể giàu domain semantics nội bộ; Integration Event nên ổn định hơn vì service khác phụ thuộc.",
+        "Integration Event nên chứa toàn bộ aggregate để mọi consumer dùng thoải mái.",
+        "Domain Event luôn cần Version; Integration Event không cần Version.",
+        "Domain Event và Integration Event luôn dùng chung class để tránh mapping."
+      ],
+      "answerIndex": 0,
+      "explanation": "Integration Event là external contract nên cần ổn định và thận trọng hơn."
+    },
+    {
+      "id": "l20-hard-027",
+      "level": "L3 - Advanced",
+      "tag": "MassTransit Topology",
+      "question": "Vì sao đổi namespace của event contract có thể ảnh hưởng RabbitMQ topology khi dùng MassTransit?",
+      "options": [
+        "Vì MassTransit có thể dựa trên message type/namespace để đặt tên exchange/entity.",
+        "Vì namespace C# là routing key duy nhất trong AMQP.",
+        "Vì RabbitMQ compile C# namespace thành queue.",
+        "Vì Docker Compose đọc namespace để map port."
+      ],
+      "answerIndex": 0,
+      "explanation": "MassTransit topology convention thường liên quan message type/namespace."
+    },
+    {
+      "id": "l20-hard-028",
+      "level": "L3 - Advanced",
+      "tag": "Roadmap",
+      "question": "Vì sao bài 20 nên làm trước NotificationWorker?",
+      "options": [
+        "Vì worker cần consume cùng event contract ổn định, tránh copy class hoặc reference OrderingService.",
+        "Vì worker không thể tạo nếu chưa có Outbox.",
+        "Vì RabbitMQ không cho consumer khi chưa có Version.",
+        "Vì Postman không test được worker."
+      ],
+      "answerIndex": 0,
+      "explanation": "Chuẩn hóa contract trước giúp consumer ở Buổi 21 phụ thuộc đúng BuildingBlocks.Contracts."
+    },
+    {
+      "id": "l20-hard-029",
+      "level": "L3 - Advanced",
+      "tag": "Not Solved Yet",
+      "question": "Sau Buổi 20, vấn đề nào vẫn CHƯA được giải quyết?",
+      "options": [
+        "Consumer duplicate handling, retry/DLQ, outbox, contract testing automation.",
+        "Publisher và consumer có shared contract.",
+        "OrderCreatedIntegrationEvent có EventId.",
+        "OrderingService có thể publish contract mới."
+      ],
+      "answerIndex": 0,
+      "explanation": "Bài 20 chỉ contract design basic. Reliability/automation học sau."
+    },
+    {
+      "id": "l20-hard-030",
+      "level": "L3 - Advanced",
+      "tag": "Interview",
+      "question": "Câu trả lời nào thể hiện hiểu sâu nhất về Buổi 20?",
+      "options": [
+        "Tôi tạo project shared để khỏi phải viết lại code nhiều lần.",
+        "Tôi tách OrderCreatedIntegrationEvent vào BuildingBlocks.Contracts để publisher/consumer phụ thuộc contract trung lập, giảm coupling vào OrderingService và chuẩn bị cho consumer/retry/outbox sau này.",
+        "Tôi đưa event vào shared project nên hệ thống đã exactly-once.",
+        "Tôi dùng Version nên không bao giờ có breaking change."
+      ],
+      "answerIndex": 1,
+      "explanation": "Câu này nêu đúng lý do kiến trúc, giảm coupling và liên hệ roadmap sau."
+    }
+  ]
+}
