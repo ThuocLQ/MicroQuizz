@@ -1,0 +1,443 @@
+{
+  "lessonRange": "21-23",
+  "title": "Buổi 21-23 - NotificationWorker, Retry/DLQ, Idempotency, Outbox Basic",
+  "description": "Quiz hard mode theo MicroShop: câu hỏi trắc nghiệm về consumer, retry/error queue, idempotency và outbox. Đáp án nhiễu sát nghĩa, tập trung hiểu bản chất và trade-off.",
+  "version": "1.0-hard",
+  "questionCount": 30,
+  "levels": [
+    {
+      "id": "L1 - Foundation",
+      "description": "Khái niệm nền tảng, phân biệt đúng vai trò từng bài."
+    },
+    {
+      "id": "L2 - Applied",
+      "description": "Áp dụng vào code, config, Postman/RabbitMQ UI và flow MicroShop."
+    },
+    {
+      "id": "L3 - Advanced",
+      "description": "Reliability trade-off, failure scenario, production mindset."
+    }
+  ],
+  "questions": [
+    {
+      "id": "l21-23-hard-001",
+      "level": "L1 - Foundation",
+      "tag": "Roadmap",
+      "question": "Chuỗi bài 21 → 23 trong Phase 1.5 xử lý đúng nhất phần nào của MicroShop?",
+      "options": [
+        "Consumer nhận event, consumer reliability, rồi publisher reliability bằng Outbox.",
+        "Gateway routing, JWT authorization, rồi API versioning.",
+        "Kafka topic, MongoDB projection, rồi analytics worker.",
+        "Catalog CRUD, Basket Redis, rồi gRPC internal call."
+      ],
+      "answerIndex": 0,
+      "explanation": "Bài 21 tạo NotificationWorker consume event, bài 22 thêm retry/DLQ/idempotency phía consumer, bài 23 thêm Outbox phía publisher."
+    },
+    {
+      "id": "l21-23-hard-002",
+      "level": "L1 - Foundation",
+      "tag": "Lesson 21",
+      "question": "Mục tiêu chính của NotificationWorker ở bài 21 là gì?",
+      "options": [
+        "Consume OrderCreatedIntegrationEvent từ RabbitMQ và xử lý notification giả lập.",
+        "Lưu OrderCreatedIntegrationEvent vào OutboxMessages.",
+        "Tạo JWT cho service-to-service communication.",
+        "Build MongoDB read model từ Kafka topic."
+      ],
+      "answerIndex": 0,
+      "explanation": "Bài 21 tập trung worker consumer đầu tiên: nhận OrderCreatedIntegrationEvent và log/simulate notification."
+    },
+    {
+      "id": "l21-23-hard-003",
+      "level": "L1 - Foundation",
+      "tag": "MassTransit",
+      "question": "Trong bài 21, class consumer của MassTransit thường implement interface nào?",
+      "options": [
+        "IConsumer<OrderCreatedIntegrationEvent>",
+        "IPublishEndpoint<OrderCreatedIntegrationEvent>",
+        "IHostedService<OrderCreatedIntegrationEvent>",
+        "IRequestHandler<OrderCreatedIntegrationEvent>"
+      ],
+      "answerIndex": 0,
+      "explanation": "MassTransit consumer implement IConsumer<TMessage> để nhận message."
+    },
+    {
+      "id": "l21-23-hard-004",
+      "level": "L1 - Foundation",
+      "tag": "Consumer",
+      "question": "Vì sao NotificationWorker nên reference BuildingBlocks.Contracts thay vì OrderingService?",
+      "options": [
+        "Để worker phụ thuộc shared event contract, không coupling vào toàn bộ publisher service.",
+        "Để worker có thể gọi trực tiếp repository của OrderingService.",
+        "Để RabbitMQ tự tạo database table cho worker.",
+        "Để MassTransit bỏ qua serialization."
+      ],
+      "answerIndex": 0,
+      "explanation": "Worker chỉ cần contract, không nên kéo dependency sang OrderingService."
+    },
+    {
+      "id": "l21-23-hard-005",
+      "level": "L1 - Foundation",
+      "tag": "Retry",
+      "question": "Trong bài 22, retry trong consumer dùng để xử lý tốt nhất loại lỗi nào?",
+      "options": [
+        "Lỗi tạm thời như network timeout hoặc dependency trả 503.",
+        "Payload sai schema vĩnh viễn.",
+        "Business rule không hợp lệ chắc chắn.",
+        "Event thiếu field bắt buộc do bug contract."
+      ],
+      "answerIndex": 0,
+      "explanation": "Retry phù hợp lỗi transient. Dữ liệu sai/bug vĩnh viễn retry nhiều cũng không tự sửa được."
+    },
+    {
+      "id": "l21-23-hard-006",
+      "level": "L1 - Foundation",
+      "tag": "Error Queue",
+      "question": "MassTransit error queue trong bài 22 dùng để làm gì?",
+      "options": [
+        "Giữ message xử lý thất bại sau khi retry hết để debug/replay/manual handling.",
+        "Tăng tốc publish event từ OrderingService.",
+        "Lưu JWT token của worker.",
+        "Thay thế OutboxMessages table."
+      ],
+      "answerIndex": 0,
+      "explanation": "Error queue giữ message lỗi sau retry, giúp không retry vô hạn và còn dữ liệu để điều tra."
+    },
+    {
+      "id": "l21-23-hard-007",
+      "level": "L1 - Foundation",
+      "tag": "Retry Count",
+      "question": "`r.Interval(3, TimeSpan.FromSeconds(2))` trong MassTransit nên hiểu thế nào?",
+      "options": [
+        "Có 1 lần xử lý ban đầu, nếu lỗi thì retry thêm 3 lần, mỗi lần cách 2 giây.",
+        "Tổng cộng Consume chỉ được gọi 3 lần, mỗi lần cách 2 giây.",
+        "Message được đưa thẳng vào error queue sau 3 giây.",
+        "Retry vô hạn, mỗi vòng cách 3 giây."
+      ],
+      "answerIndex": 0,
+      "explanation": "Interval(3, ...) nghĩa là 3 retries sau attempt ban đầu."
+    },
+    {
+      "id": "l21-23-hard-008",
+      "level": "L1 - Foundation",
+      "tag": "Idempotency",
+      "question": "Idempotency trong NotificationWorker bài 22 nhằm mục tiêu chính nào?",
+      "options": [
+        "Cùng EventId bị deliver lại thì không tạo side effect trùng.",
+        "Đảm bảo RabbitMQ không bao giờ redeliver message.",
+        "Đảm bảo publisher không bao giờ gửi duplicate event.",
+        "Tự động rollback database của OrderingService."
+      ],
+      "answerIndex": 0,
+      "explanation": "Consumer idempotency giúp xử lý duplicate delivery an toàn hơn."
+    },
+    {
+      "id": "l21-23-hard-009",
+      "level": "L1 - Foundation",
+      "tag": "Outbox",
+      "question": "Outbox Pattern bài 23 giải quyết vấn đề chính nào?",
+      "options": [
+        "DB save thành công nhưng publish event sang broker fail.",
+        "Consumer nhận duplicate message từ RabbitMQ.",
+        "Gateway route sai sang BasketService.",
+        "JWT token hết hạn khi gọi internal API."
+      ],
+      "answerIndex": 0,
+      "explanation": "Outbox xử lý khoảng hở giữa database transaction và message broker."
+    },
+    {
+      "id": "l21-23-hard-010",
+      "level": "L1 - Foundation",
+      "tag": "Outbox Transaction",
+      "question": "Điều kiện quan trọng nhất để Outbox có ý nghĩa là gì?",
+      "options": [
+        "Business data và OutboxMessage được lưu cùng transaction.",
+        "OutboxMessage được lưu ở database riêng với OrderingService.",
+        "OutboxPublisher chạy trước khi insert Order.",
+        "NotificationWorker phải đọc trực tiếp bảng OutboxMessages."
+      ],
+      "answerIndex": 0,
+      "explanation": "Order và OutboxMessage cần commit/rollback cùng nhau để tránh lệch business data và event."
+    },
+    {
+      "id": "l21-23-hard-011",
+      "level": "L2 - Applied",
+      "tag": "RabbitMQ UI",
+      "question": "Sau bài 21, nếu NotificationWorker đang chạy tốt, queue `notification-order-created` thường có biểu hiện nào trong RabbitMQ UI?",
+      "options": [
+        "Message count có thể về 0 rất nhanh vì worker consume và ack ngay.",
+        "Message count luôn tăng vì consumer chỉ đọc copy.",
+        "Queue tự biến mất sau mỗi event.",
+        "Queue chuyển thành Kafka topic."
+      ],
+      "answerIndex": 0,
+      "explanation": "Nếu consumer xử lý nhanh và ack, queue chính thường không giữ message lâu."
+    },
+    {
+      "id": "l21-23-hard-012",
+      "level": "L2 - Applied",
+      "tag": "Consumer Config",
+      "question": "Đoạn config nào thể hiện đúng việc gắn consumer vào receive endpoint trong MassTransit?",
+      "options": [
+        "cfg.ReceiveEndpoint(\"notification-order-created\", e => e.ConfigureConsumer<OrderCreatedIntegrationEventConsumer>(context));",
+        "cfg.PublishEndpoint(\"notification-order-created\", e => e.ConfigureConsumer<OrderCreatedIntegrationEventConsumer>(context));",
+        "app.MapPost(\"notification-order-created\", OrderCreatedIntegrationEventConsumer.Consume);",
+        "builder.Services.AddScoped<OrderCreatedIntegrationEvent>();"
+      ],
+      "answerIndex": 0,
+      "explanation": "Consumer được gắn vào ReceiveEndpoint bằng ConfigureConsumer."
+    },
+    {
+      "id": "l21-23-hard-013",
+      "level": "L2 - Applied",
+      "tag": "Simulate Failure",
+      "question": "Trong bài 22, nếu bật `NotificationWorker:SimulateFailure=true`, expected đúng nhất là gì?",
+      "options": [
+        "Consumer throw exception, MassTransit retry, hết retry thì message vào `_error` queue.",
+        "OrderingService không tạo được Order vì worker lỗi.",
+        "RabbitMQ tự xóa queue chính.",
+        "OutboxPublisher tự mark ProcessedAtUtc."
+      ],
+      "answerIndex": 0,
+      "explanation": "Failure xảy ra ở consumer async sau publish, API tạo order không nhất thiết fail."
+    },
+    {
+      "id": "l21-23-hard-014",
+      "level": "L2 - Applied",
+      "tag": "Error Queue",
+      "question": "Receive endpoint tên `notification-order-created` thì error queue MassTransit thường có tên nào?",
+      "options": [
+        "notification-order-created_error",
+        "notification-order-created_retry",
+        "OrderCreatedIntegrationEvent_error_topic",
+        "outbox-notification-order-created"
+      ],
+      "answerIndex": 0,
+      "explanation": "MassTransit thường tạo error queue với suffix `_error` theo receive endpoint."
+    },
+    {
+      "id": "l21-23-hard-015",
+      "level": "L2 - Applied",
+      "tag": "Idempotency Store",
+      "question": "Bản idempotency basic bài 22 dùng in-memory store có điểm yếu nào rõ nhất?",
+      "options": [
+        "Mất dữ liệu khi worker restart và không share giữa nhiều instance.",
+        "Không thể lưu Guid trong C#.",
+        "Làm RabbitMQ không tạo được exchange.",
+        "Bắt buộc phải dùng Kafka thay RabbitMQ."
+      ],
+      "answerIndex": 0,
+      "explanation": "In-memory chỉ phù hợp học concept, không bền và không scale multi-instance."
+    },
+    {
+      "id": "l21-23-hard-016",
+      "level": "L2 - Applied",
+      "tag": "Duplicate Test",
+      "question": "Cách test duplicate event bài 22 hợp lý nhất cho người mới là gì?",
+      "options": [
+        "Tạm publish hai event có cùng EventId rồi kiểm tra lần hai bị skip.",
+        "Xóa queue RabbitMQ rồi tạo lại.",
+        "Đổi port OrderingService mỗi lần gửi request.",
+        "Tăng RetryCount của OutboxMessage thủ công."
+      ],
+      "answerIndex": 0,
+      "explanation": "Duplicate cần cùng EventId. Publish hai event cùng EventId giúp kiểm tra idempotency."
+    },
+    {
+      "id": "l21-23-hard-017",
+      "level": "L2 - Applied",
+      "tag": "Outbox Schema",
+      "question": "Field nào trong OutboxMessages cho biết event đã publish thành công?",
+      "options": [
+        "ProcessedAtUtc",
+        "OccurredAtUtc",
+        "Type",
+        "Content"
+      ],
+      "answerIndex": 0,
+      "explanation": "ProcessedAtUtc có giá trị nghĩa là background publisher đã mark processed."
+    },
+    {
+      "id": "l21-23-hard-018",
+      "level": "L2 - Applied",
+      "tag": "Outbox Publisher",
+      "question": "Sau bài 23, CreateOrderHandler nên thay đổi thế nào?",
+      "options": [
+        "Không publish trực tiếp nữa; chỉ save Order + OutboxMessage cùng transaction.",
+        "Publish trực tiếp hai lần để tránh mất event.",
+        "Chuyển sang consume OrderCreatedIntegrationEvent.",
+        "Gọi NotificationWorker qua HTTP để gửi notification ngay."
+      ],
+      "answerIndex": 0,
+      "explanation": "Handler ghi ý định publish event vào Outbox, publisher nền xử lý sau."
+    },
+    {
+      "id": "l21-23-hard-019",
+      "level": "L2 - Applied",
+      "tag": "Outbox Debug",
+      "question": "Endpoint `/debug/outbox` trong bài 23 có mục đích gì?",
+      "options": [
+        "Xem trạng thái OutboxMessages bằng Postman trong môi trường Development.",
+        "Cho consumer đọc trực tiếp message từ DB thay RabbitMQ.",
+        "Reset toàn bộ queue RabbitMQ.",
+        "Sinh JWT debug token."
+      ],
+      "answerIndex": 0,
+      "explanation": "Debug endpoint hỗ trợ Postman-first để kiểm tra Pending/Processed/RetryCount/LastError."
+    },
+    {
+      "id": "l21-23-hard-020",
+      "level": "L2 - Applied",
+      "tag": "Outbox Failure",
+      "question": "Nếu `OutboxPublisher:SimulatePublishFailure=true`, expected đúng nhất là gì?",
+      "options": [
+        "API tạo order vẫn success, OutboxMessage pending, RetryCount tăng, LastError có lỗi.",
+        "Order không được lưu vì publisher fail.",
+        "NotificationWorker tự tạo lại OutboxMessage.",
+        "RabbitMQ chuyển message sang `_error` queue dù chưa publish."
+      ],
+      "answerIndex": 0,
+      "explanation": "Publish failure xảy ra trong background publisher sau khi Order + OutboxMessage đã commit."
+    },
+    {
+      "id": "l21-23-hard-021",
+      "level": "L3 - Advanced",
+      "tag": "Failure Scenario",
+      "question": "Nếu consumer gửi email thành công nhưng crash trước khi ack RabbitMQ, điều gì có thể xảy ra?",
+      "options": [
+        "RabbitMQ redeliver message và consumer có thể gửi email trùng nếu không idempotent.",
+        "RabbitMQ tự biết email đã gửi nên không redeliver.",
+        "OutboxMessages tự mark ProcessedAtUtc null.",
+        "OrderingService rollback Order đã tạo."
+      ],
+      "answerIndex": 0,
+      "explanation": "Side effect thành công nhưng ack chưa xong có thể dẫn tới duplicate delivery."
+    },
+    {
+      "id": "l21-23-hard-022",
+      "level": "L3 - Advanced",
+      "tag": "Idempotency Race",
+      "question": "Vì sao flow `HasProcessed → Process → MarkAsProcessed` bằng in-memory store chưa chống duplicate tuyệt đối?",
+      "options": [
+        "Hai duplicate cùng EventId có thể check false song song rồi cùng xử lý side effect.",
+        "ConcurrentDictionary không lưu được byte.",
+        "RabbitMQ không gửi được cùng EventId.",
+        "MassTransit không cho async consumer."
+      ],
+      "answerIndex": 0,
+      "explanation": "Check-then-act không atomic. Production thường dùng DB unique constraint/Inbox."
+    },
+    {
+      "id": "l21-23-hard-023",
+      "level": "L3 - Advanced",
+      "tag": "Outbox Duplicate",
+      "question": "Trong Outbox Publisher, nếu publish sang RabbitMQ thành công nhưng mark `ProcessedAtUtc` fail thì rủi ro gì?",
+      "options": [
+        "Message vẫn pending trong DB và có thể bị publish lại lần sau.",
+        "RabbitMQ tự xóa message khỏi consumer queue.",
+        "Order bị rollback tự động.",
+        "NotificationWorker không bao giờ nhận event."
+      ],
+      "answerIndex": 0,
+      "explanation": "Publish thành công nhưng DB mark fail gây duplicate publish. Consumer idempotency giúp giảm tác hại."
+    },
+    {
+      "id": "l21-23-hard-024",
+      "level": "L3 - Advanced",
+      "tag": "Outbox vs Retry",
+      "question": "Phân biệt nào đúng nhất giữa retry/error queue bài 22 và Outbox bài 23?",
+      "options": [
+        "Retry/error queue xử lý lỗi phía consumer; Outbox xử lý lỗi publish phía publisher.",
+        "Retry/error queue thay thế Outbox nếu retry đủ nhiều.",
+        "Outbox chỉ dùng để consumer retry message lỗi.",
+        "Cả hai đều chỉ là tên khác của RabbitMQ DLQ."
+      ],
+      "answerIndex": 0,
+      "explanation": "Hai pattern xử lý hai phía khác nhau của reliability."
+    },
+    {
+      "id": "l21-23-hard-025",
+      "level": "L3 - Advanced",
+      "tag": "Production Outbox",
+      "question": "Điểm nào làm Outbox basic bài 23 chưa đủ production khi scale nhiều instance OrderingService?",
+      "options": [
+        "Chưa có locking/claiming an toàn để tránh nhiều publisher bốc cùng pending message.",
+        "Không thể serialize JSON trong .NET.",
+        "RabbitMQ không nhận được message từ BackgroundService.",
+        "OutboxMessage không thể chứa EventId."
+      ],
+      "answerIndex": 0,
+      "explanation": "Multi-instance cần claim/lock như SKIP LOCKED, status transition, distributed lock hoặc cơ chế tương đương."
+    },
+    {
+      "id": "l21-23-hard-026",
+      "level": "L3 - Advanced",
+      "tag": "Message Loss",
+      "question": "So với publish trực tiếp trong handler, Outbox giảm rủi ro mất event bằng cách nào?",
+      "options": [
+        "Biến event cần publish thành record trong DB được commit cùng business data.",
+        "Bắt RabbitMQ tham gia cùng transaction của database.",
+        "Bắt consumer gọi lại API để lấy event.",
+        "Lưu message trực tiếp vào error queue trước khi publish."
+      ],
+      "answerIndex": 0,
+      "explanation": "Outbox lưu event trong DB trước, background publisher có thể retry sau nếu broker lỗi."
+    },
+    {
+      "id": "l21-23-hard-027",
+      "level": "L3 - Advanced",
+      "tag": "NotificationWorker Down",
+      "question": "Nếu NotificationWorker tắt nhưng OrderingService + OutboxPublisher + RabbitMQ vẫn chạy, expected đúng là gì?",
+      "options": [
+        "OutboxMessage có thể Processed, còn RabbitMQ queue giữ message chờ consumer.",
+        "OutboxMessage luôn Pending vì consumer tắt.",
+        "Create order API bắt buộc fail.",
+        "RabbitMQ tự đưa message vào `_error` queue ngay."
+      ],
+      "answerIndex": 0,
+      "explanation": "Outbox chỉ đảm bảo publish ra broker. Consumer tắt thì message nằm ở queue chờ."
+    },
+    {
+      "id": "l21-23-hard-028",
+      "level": "L3 - Advanced",
+      "tag": "Exactly Once",
+      "question": "Sau bài 21-23, khẳng định nào đúng nhất về reliability của MicroShop?",
+      "options": [
+        "Đã tốt hơn nhiều nhưng chưa exactly-once end-to-end; vẫn cần idempotency/inbox/locking/monitoring production.",
+        "Đã exactly-once tuyệt đối vì có Outbox.",
+        "Không còn cần retry vì Outbox xử lý mọi lỗi.",
+        "Không còn duplicate vì RabbitMQ tự dedupe EventId."
+      ],
+      "answerIndex": 0,
+      "explanation": "Outbox + retry + idempotency basic giúp đáng tin hơn, chưa phải exactly-once end-to-end."
+    },
+    {
+      "id": "l21-23-hard-029",
+      "level": "L3 - Advanced",
+      "tag": "Team System",
+      "question": "Một hệ thống legacy `proc xử lý nghiệp vụ → insert event vào DB queue → worker dequeue FIFO` được gọi là Outbox chuẩn khi nào?",
+      "options": [
+        "Khi event record được ghi cùng transaction với business data và có cơ chế publish/retry an toàn.",
+        "Chỉ cần có chữ queue trong tên bảng.",
+        "Chỉ cần worker đọc FIFO là đủ.",
+        "Chỉ cần sau đó đẩy sang Kafka."
+      ],
+      "answerIndex": 0,
+      "explanation": "Điểm cốt lõi là atomic với business transaction; production hơn cần trạng thái/retry/audit/locking."
+    },
+    {
+      "id": "l21-23-hard-030",
+      "level": "L3 - Advanced",
+      "tag": "Interview",
+      "question": "Câu trả lời nào thể hiện hiểu sâu nhất về bài 21-23?",
+      "options": [
+        "Tôi tạo worker nhận event, thêm retry/error queue/idempotency để consumer an toàn hơn, rồi thêm Outbox để publisher không mất event khi broker lỗi.",
+        "Tôi dùng RabbitMQ nên hệ thống tự động không bao giờ mất message.",
+        "Tôi thêm Outbox nên không cần consumer idempotency.",
+        "Tôi thêm retry nên không cần error queue và không cần Outbox."
+      ],
+      "answerIndex": 0,
+      "explanation": "Câu này nối đúng ba bài: consume event, consumer reliability, publisher reliability."
+    }
+  ]
+}

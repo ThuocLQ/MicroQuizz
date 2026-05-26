@@ -22,5 +22,11 @@
     "title": "Buổi 20 - BuildingBlocks.Contracts + Event Design",
     "description": "30 câu hard mode về shared contracts, event design, versioning, coupling và consumer.",
     "file": "./data/quizzes/lesson-20-buildingblocks-contracts-event-design-quiz-hard.json"
+  },
+  {
+    "id": "lessons-21-22-23-notification-retry-outbox-hard",
+    "title": "Buổi 21-23 - NotificationWorker, Retry/DLQ, Idempotency, Outbox Basic",
+    "description": "30 câu hard mode về consumer, retry/error queue, idempotency và outbox.",
+    "file": "./data/quizzes/quiz-lessons-21-22-23-notification-retry-outbox-hard.json"
   }
 ]
